@@ -1,7 +1,8 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { toast as sonnerToast } from "sonner";
 import type { ClassReservation, UserProfile } from "@/types";
 
-interface Toast { id: string; text: string }
+type ThemeMode = "light" | "dark";
 
 interface AppState {
   profile: UserProfile;
@@ -17,6 +18,8 @@ interface AppState {
   setBrand: (v: string) => void;
   ninaNote: string;
   setNinaNote: (v: string) => void;
+  theme: ThemeMode;
+  setTheme: (v: ThemeMode) => void;
   toast: (text: string) => void;
 }
 
@@ -41,12 +44,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [reservations, setReservations] = useState<ClassReservation[]>([{ classId: "c2", reminder: true }]);
   const [brand, setBrand] = useState("Forma com Fabiano");
   const [ninaNote, setNinaNote] = useState("Avatar da Nina");
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    if (typeof window === "undefined") return "light";
+    const saved = window.localStorage.getItem("forma-theme");
+    if (saved === "light" || saved === "dark") return saved;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem("forma-theme", theme);
+  }, [theme]);
 
   const toast = (text: string) => {
-    const id = crypto.randomUUID();
-    setToasts((t) => [...t, { id, text }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 2800);
+    sonnerToast.success(text, {
+      duration: 2600,
+      closeButton: true,
+    });
   };
 
   const value = useMemo<AppState>(() => ({
@@ -72,19 +86,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setBrand,
     ninaNote,
     setNinaNote,
+    theme,
+    setTheme,
     toast,
-  }), [profile, onboarded, favorites, reservations, brand, ninaNote]);
+  }), [profile, onboarded, favorites, reservations, brand, ninaNote, theme]);
 
-  return (
-    <Ctx.Provider value={value}>
-      {children}
-      <div className="pointer-events-none fixed bottom-20 right-4 z-50 flex flex-col gap-2 md:bottom-6" aria-live="polite">
-        {toasts.map((t) => (
-          <div key={t.id} className="pointer-events-auto rounded-xl bg-stone-900 px-4 py-3 text-sm text-white shadow-lg">{t.text}</div>
-        ))}
-      </div>
-    </Ctx.Provider>
-  );
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export function useApp() {

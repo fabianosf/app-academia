@@ -1,40 +1,53 @@
-import { Bell, Sparkles } from "lucide-react";
+import { Bell, MoonStar, Sparkles, SunMedium } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { notifications, user } from "@/data/mock";
 import { useApp } from "@/hooks/AppContext";
 
 export function AppHeader() {
-  const { brand } = useApp();
+  const { brand, theme, setTheme } = useApp();
   const [open, setOpen] = useState(false);
+  const isDark = theme === "dark";
   const hour = new Date().getHours();
   const hello = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-stone-200/70 bg-paper/90 px-4 py-3 backdrop-blur md:px-8">
-      <div>
-        <p className="text-xs text-stone-500 md:hidden">{brand}</p>
-        <p className="font-display text-base font-semibold md:text-lg">{hello}, {user.name}</p>
-        <p className="text-xs text-stone-500">{user.streakDays} dias em movimento</p>
-      </div>
-      <div className="flex items-center gap-2">
-        <Link to="/nina" className="hidden items-center gap-2 rounded-lg border border-[#e7d5ca] bg-[#fbf1eb] px-3 py-2 text-sm font-semibold text-[#a95335] transition-colors hover:bg-[#f6e8df] sm:inline-flex" aria-label="Atalho para a Nina">
-          <Sparkles size={16} /> Nina
-        </Link>
-        <button className="relative rounded-lg border border-stone-200/80 bg-white p-2 transition-colors hover:bg-stone-50" aria-label="Notificações" onClick={() => setOpen((v) => !v)}>
-          <Bell size={18} />
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#e07a4a]" />
-        </button>
-        <Link to="/perfil" className="grid h-10 w-10 place-items-center rounded-lg bg-forest text-sm font-semibold text-white transition-colors hover:bg-[#304b3e]" aria-label="Perfil">{user.avatarInitials}</Link>
+    <header className={isDark ? "sticky top-0 z-30 border-b border-[#2d312f] bg-[rgba(18,20,19,0.76)] px-4 py-3 backdrop-blur-xl md:px-8" : "sticky top-0 z-30 border-b border-[#eae0d9] bg-[rgba(245,240,234,0.78)] px-4 py-3 backdrop-blur-xl md:px-8"}>
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+        <div>
+          <p className={isDark ? "text-[10px] uppercase tracking-[0.22em] text-[#b9b0a6] md:hidden" : "text-[10px] uppercase tracking-[0.22em] text-[#7b857d] md:hidden"}>{brand}</p>
+          <p className={isDark ? "font-display text-base font-semibold text-[#f5efe8] md:text-xl" : "font-display text-base font-semibold text-[#1f2c27] md:text-xl"}>{hello}, {user.name}</p>
+          <p className={isDark ? "text-xs text-[#c1b9b1]" : "text-xs text-[#66706a]"}>{user.streakDays} dias em movimento</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link to="/nina" className={isDark ? "hidden items-center gap-2 rounded-xl border border-[#a86645]/40 bg-[linear-gradient(135deg,#f8eae1_0%,#f1d6c4_100%)] px-3 py-2 text-sm font-semibold text-[#8b4838] shadow-[0_12px_24px_rgba(168,102,69,0.18)] transition-all hover:-translate-y-0.5 hover:shadow-[0_16px_24px_rgba(168,102,69,0.24)] sm:inline-flex" : "hidden items-center gap-2 rounded-xl border border-[#f0d8cb] bg-[#fff5f1] px-3 py-2 text-sm font-semibold text-[#b1603d] shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#fce9e0] sm:inline-flex"} aria-label="Atalho para a Nina">
+            <Sparkles size={16} /> Nina
+          </Link>
+          <button
+            type="button"
+            onClick={() => setTheme(isDark ? "light" : "dark")}
+            className={isDark ? "rounded-xl border border-[#2d312f] bg-[#1a211f] p-2.5 text-[#f4efe9] shadow-[0_12px_20px_rgba(0,0,0,0.12)] transition-all hover:-translate-y-0.5 hover:bg-[#1f2926]" : "rounded-xl border border-[#eadfdb] bg-white/80 p-2.5 text-[#2d3b36] shadow-sm transition-all hover:-translate-y-0.5 hover:bg-white"}
+            aria-label="Alternar tema"
+            title="Alternar tema"
+          >
+            {isDark ? <SunMedium size={18} /> : <MoonStar size={18} />}
+          </button>
+          <button className={isDark ? "relative rounded-xl border border-[#2d312f] bg-[#1a211f] p-2.5 shadow-[0_12px_20px_rgba(0,0,0,0.12)] transition-all hover:-translate-y-0.5 hover:bg-[#1f2926]" : "relative rounded-xl border border-[#eadfdb] bg-white/80 p-2.5 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-white"} aria-label="Notificações" onClick={() => setOpen((v) => !v)}>
+            <Bell size={18} className={isDark ? "text-[#f4efe9]" : "text-[#2d3b36]"} />
+            <span className={isDark ? "absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-[#d96f4f] ring-2 ring-[#1a211f]" : "absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-[#d96f4f] ring-2 ring-[#f7f1ed]"} />
+          </button>
+          <Link to="/perfil" className="grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(135deg,#1d2a26_0%,#32463d_100%)] text-sm font-semibold text-white shadow-[0_10px_22px_rgba(29,42,38,0.24)] transition-transform hover:-translate-y-0.5" aria-label="Perfil">{user.avatarInitials}</Link>
+        </div>
       </div>
       {open && (
-        <div className="absolute right-4 top-16 w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-stone-200 bg-white p-3 shadow-lg">
-          <p className="mb-2 text-sm font-semibold">Notificações</p>
+        <div className={isDark ? "absolute right-4 top-16 w-80 max-w-[calc(100vw-2rem)] rounded-[1.25rem] border border-[#2d312f] bg-[rgba(22,26,24,0.96)] p-3 shadow-[0_22px_40px_rgba(12,14,13,0.28)] backdrop-blur-xl" : "absolute right-4 top-16 w-80 max-w-[calc(100vw-2rem)] rounded-[1.25rem] border border-[#eadfdb] bg-white/90 p-3 shadow-[0_18px_38px_rgba(22,24,22,0.12)] backdrop-blur-xl"}>
+          <p className={isDark ? "mb-2 text-sm font-semibold text-[#f4efe9]" : "mb-2 text-sm font-semibold text-[#1f2c27]"}>Notificações</p>
           <ul className="space-y-2">
             {notifications.map((n) => (
-              <li key={n.id} className="rounded-xl bg-stone-50 p-3 text-sm">
-                <p className="font-medium">{n.title}</p>
-                <p className="text-stone-600">{n.body}</p>
-                <p className="mt-1 text-xs text-stone-400">{n.time}{n.read ? "" : " · nova"}</p>
+              <li key={n.id} className={isDark ? "rounded-2xl border border-[#2d312f] bg-[#1b211e] p-3 text-sm" : "rounded-2xl bg-[#f8f5f2] p-3 text-sm"}>
+                <p className={isDark ? "font-medium text-[#f2e8e1]" : "font-medium text-[#23332d]"}>{n.title}</p>
+                <p className={isDark ? "mt-1 text-[#c7beb5]" : "mt-1 text-[#4c564f]"}>{n.body}</p>
+                <p className={isDark ? "mt-2 text-[11px] uppercase tracking-[0.12em] text-[#b5aea6]" : "mt-2 text-[11px] uppercase tracking-[0.12em] text-[#7c817b]"}>{n.time}{n.read ? "" : " · nova"}</p>
               </li>
             ))}
           </ul>
@@ -47,8 +60,8 @@ export function AppHeader() {
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="mb-7">
-      <h1 className="font-display text-3xl font-semibold tracking-tight text-forest md:text-4xl">{title}</h1>
-      {subtitle && <p className="mt-1 max-w-2xl text-sm text-stone-600">{subtitle}</p>}
+      <h1 className="font-display text-3xl font-semibold tracking-tight text-[#1d2a26] md:text-4xl">{title}</h1>
+      {subtitle && <p className="mt-1 max-w-2xl text-sm text-[#5e655f]">{subtitle}</p>}
     </div>
   );
 }
@@ -56,35 +69,35 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
 export function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
     <div className="mb-3 flex items-center justify-between">
-      <h2 className="font-display text-lg font-semibold text-forest">{title}</h2>
+      <h2 className="font-display text-xl font-semibold text-[#1d2a26]">{title}</h2>
       {action}
     </div>
   );
 }
 
 export function SafetyNotice({ children }: { children: React.ReactNode }) {
-  return <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-950">{children}</p>;
+  return <p className="rounded-2xl border border-[#f0d89e] bg-[#fff9ef] px-3 py-2 text-xs leading-relaxed text-[#7a5c2a]">{children}</p>;
 }
 
 export function EmptyState({ title, text }: { title: string; text: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-stone-300 bg-white px-6 py-10 text-center">
-      <p className="font-display text-lg font-semibold">{title}</p>
-      <p className="mt-1 text-sm text-stone-500">{text}</p>
+    <div className="rounded-[1.5rem] border border-dashed border-[#d8d0ca] bg-white/70 px-6 py-10 text-center">
+      <p className="font-display text-xl font-semibold text-[#1d2a26]">{title}</p>
+      <p className="mt-1 text-sm text-[#58625c]">{text}</p>
     </div>
   );
 }
 
 export function LoadingSkeleton() {
-  return <div className="h-28 animate-pulse rounded-2xl bg-stone-200/70" aria-hidden />;
+  return <div className="h-28 animate-pulse rounded-[1.25rem] bg-[#eae1d8]" aria-hidden />;
 }
 
 export function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
-      <p className="text-xs uppercase tracking-wide text-stone-500">{label}</p>
-      <p className="mt-1 font-display text-2xl font-semibold">{value}</p>
-      {hint && <p className="text-xs text-stone-500">{hint}</p>}
+    <div className="rounded-[1.25rem] border border-[#ece1d8] bg-white/80 p-4 shadow-[0_12px_24px_rgba(27,31,29,0.04)]">
+      <p className="text-[11px] uppercase tracking-[0.16em] text-[#787f7a]">{label}</p>
+      <p className="mt-2 font-display text-2xl font-semibold text-[#1d2a26]">{value}</p>
+      {hint && <p className="mt-1 text-xs text-[#5e655f]">{hint}</p>}
     </div>
   );
 }

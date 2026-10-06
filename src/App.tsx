@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Toaster } from "sonner";
 import { AppProvider } from "@/hooks/AppContext";
 import { AppLayout } from "@/layouts/AppLayout";
 import { DashboardPage } from "@/pages/DashboardPage";
@@ -36,6 +37,7 @@ export default function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      <Toaster richColors position="top-right" closeButton offset={20} />
     </AppProvider>
   );
 }

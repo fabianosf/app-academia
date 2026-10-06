@@ -3,36 +3,131 @@
 @theme {
   --font-sans: "DM Sans", "Segoe UI", sans-serif;
   --font-display: "DM Serif Display", Georgia, serif;
-  --color-ink: #202621;
-  --color-paper: #f5f7f4;
-  --color-coral: #c96f4d;
-  --color-coral-deep: #a95335;
-  --color-lime: #84976a;
-  --color-forest: #243a31;
-  --color-sage: #e8eee7;
+
+  --color-background: #f7f2ed;
+  --color-foreground: #1a2220;
+  --color-card: rgba(255, 255, 255, 0.82);
+  --color-card-foreground: #1d2a26;
+  --color-muted: #f0e5dc;
+  --color-muted-foreground: #5f685f;
+  --color-primary: #c87352;
+  --color-primary-foreground: #fffaf6;
+  --color-border: rgba(35, 43, 38, 0.11);
+  --color-dark: #121716;
+  --color-dark-soft: #1a211f;
+  --color-light: #f6efe9;
+  --color-light-soft: #f0e7df;
 }
 
-html, body, #root { min-height: 100%; }
-html { scroll-behavior: smooth; }
+:root {
+  color-scheme: light;
+  --bg-main:
+    radial-gradient(circle at 8% 0%, rgba(206, 118, 75, 0.28), transparent 18%),
+    radial-gradient(circle at 100% 8%, rgba(142, 126, 103, 0.2), transparent 20%),
+    radial-gradient(circle at 50% 100%, rgba(197, 161, 118, 0.12), transparent 22%),
+    linear-gradient(180deg, #f7f2ed 0%, #efe7e0 100%);
+  --card-surface: linear-gradient(180deg, rgba(255,255,255,0.78) 0%, rgba(243,237,233,0.9) 100%);
+  --card-ink: #1a2220;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-main:
+    radial-gradient(circle at 8% 0%, rgba(206, 118, 75, 0.24), transparent 18%),
+    radial-gradient(circle at 100% 8%, rgba(163, 122, 83, 0.16), transparent 20%),
+    radial-gradient(circle at 50% 100%, rgba(168, 128, 83, 0.12), transparent 22%),
+    linear-gradient(180deg, #0f1312 0%, #121817 100%);
+  --card-surface: linear-gradient(180deg, rgba(23,28,27,0.96) 0%, rgba(15,18,17,0.96) 100%);
+  --card-ink: #f4efe9;
+}
+
+html, body, #root {
+  min-height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  background: var(--color-paper);
-  color: var(--color-ink);
+  background: var(--bg-main);
+  color: var(--color-foreground);
   font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
-h1, h2, h3, .font-display { font-family: var(--font-display); }
-h1, h2, h3, .font-display { letter-spacing: 0; }
-h1, h2, h3, p { text-wrap: pretty; }
-:focus-visible { outline: 2px solid #c45d32; outline-offset: 2px; }
-.rounded-2xl { border-radius: 0.5rem; }
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(196, 109, 79, 0.2);
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+}
+
+h1, h2, h3, p {
+  text-wrap: pretty;
+}
+
+:focus-visible {
+  outline: 2px solid rgba(196, 109, 79, 0.8);
+  outline-offset: 2px;
+}
+
+.rounded-2xl { border-radius: 1rem; }
 .page-content { animation: page-enter 220ms ease-out both; }
+
 @keyframes page-enter {
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
 .mobile-nav { padding-bottom: max(0.25rem, env(safe-area-inset-bottom)); }
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.66);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(112, 92, 76, 0.08);
+  box-shadow: 0 18px 42px rgba(34, 35, 31, 0.05);
+}
+
+.luxury-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--card-surface);
+  color: var(--card-ink);
+}
+
+.luxury-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0));
+  pointer-events: none;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(224, 214, 209, 0.45);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(196, 109, 79, 0.7), rgba(145, 98, 79, 0.7));
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after {
@@ -40,5 +135,8 @@ h1, h2, h3, p { text-wrap: pretty; }
     transition-duration: 0.01ms !important;
   }
 }
+
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
+
+
