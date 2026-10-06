@@ -1,0 +1,246 @@
+import type {
+  Achievement,
+  AiChatMessage,
+  ClassReservation,
+  Exercise,
+  Instructor,
+  LiveClass,
+  Notification,
+  User,
+  UserGoal,
+  UserProfile,
+  Workout,
+  WorkoutHistory,
+} from "@/types";
+import { apiFetch, clearTokens, getAccessToken, setTokens, unwrapList, type Paginated } from "./http";
+
+export type ApiUser = User & {
+  onboarded?: boolean;
+  theme?: string;
+  profile?: UserProfile;
+  subscriptionStatus?: string;
+};
+
+export type ProgressSummary = {
+  streakDays: number;
+  weeklyFrequency: { day: string; treinos: number; minutos: number }[];
+  muscleProgress: { group: string; value: number }[];
+  totalSessions: number;
+};
+
+export type LoadLogRow = { id?: number; exercise: string; last: string; note: string };
+
+export async function login(username: string, password: string) {
+  const data = await apiFetch<{ access: string; refresh: string }>(
+    "/auth/token/",
+    {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    },
+    false,
+  );
+  setTokens(data.access, data.refresh);
+  return data;
+}
+
+export async function requestPasswordReset(email: string) {
+  return apiFetch<{ detail: string; devResetUrl?: string }>(
+    "/auth/password-reset/",
+    {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    },
+    false,
+  );
+}
+
+export async function confirmPasswordReset(payload: {
+  uid: string;
+  token: string;
+  password: string;
+}) {
+  return apiFetch<{ detail: string }>(
+    "/auth/password-reset/confirm/",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    },
+    false,
+  );
+}
+
+/** Tenta sessão existente; não faz login automático com demo. */
+export async function tryRestoreSession() {
+  if (!getAccessToken()) return null;
+  try {
+    return await fetchMe();
+  } catch {
+    clearTokens();
+    return null;
+  }
+}
+
+export function fetchMe() {
+  return apiFetch<ApiUser>("/me/");
+}
+
+export function patchMe(payload: Record<string, unknown>) {
+  return apiFetch<ApiUser>("/me/", {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function patchProfile(profile: Partial<UserProfile>) {
+  return apiFetch<UserProfile>("/me/profile/", {
+    method: "PATCH",
+    body: JSON.stringify({
+      goal: profile.goal,
+      level: profile.level,
+      place: profile.place,
+      weekly_frequency: profile.weeklyFrequency,
+      session_minutes: profile.sessionMinutes,
+      equipment: profile.equipment,
+      limitations: profile.limitations,
+      camera_consent: profile.cameraConsent,
+      notifications: profile.notifications,
+    }),
+  });
+}
+
+export async function fetchWorkouts() {
+  return unwrapList(await apiFetch<Paginated<Workout> | Workout[]>("/workouts/"));
+}
+
+export async function fetchExercises() {
+  return unwrapList(await apiFetch<Paginated<Exercise> | Exercise[]>("/exercises/"));
+}
+
+export async function fetchLiveClasses() {
+  return apiFetch<LiveClass[]>("/live/classes/");
+}
+
+export async function fetchInstructors() {
+  return apiFetch<Instructor[]>("/live/instructors/");
+}
+
+export async function fetchFavorites() {
+  const data = await apiFetch<{ favorites: string[] }>("/training/favorites/");
+  return data.favorites;
+}
+
+export function toggleFavoriteApi(workoutId: string) {
+  return apiFetch<{ favorited: boolean; workoutId: string }>("/training/favorites/", {
+    method: "POST",
+    body: JSON.stringify({ workoutId }),
+  });
+}
+
+export async function fetchReservations() {
+  const rows = await apiFetch<ClassReservation[]>("/live/reservations/");
+  return rows.map((r) => ({ classId: r.classId, reminder: r.reminder }));
+}
+
+export function toggleReservationApi(classId: string, reminder = true) {
+  return apiFetch<{ reserved: boolean; classId: string }>("/live/reservations/", {
+    method: "POST",
+    body: JSON.stringify({ classId, reminder }),
+  });
+}
+
+export function toggleReminderApi(classId: string) {
+  return apiFetch<ClassReservation>(`/live/reservations/${classId}/reminder/`, {
+    method: "PATCH",
+    body: JSON.stringify({}),
+  });
+}
+
+export async function fetchHistory() {
+  return unwrapList(
+    await apiFetch<Paginated<WorkoutHistory> | WorkoutHistory[]>("/training/history/"),
+  );
+}
+
+export async function fetchGoals() {
+  return unwrapList(await apiFetch<Paginated<UserGoal> | UserGoal[]>("/training/goals/"));
+}
+
+export async function fetchAchievements() {
+  return unwrapList(
+    await apiFetch<Paginated<Achievement> | Achievement[]>("/training/achievements/"),
+  );
+}
+
+export async function fetchLoadLogs() {
+  return unwrapList(
+    await apiFetch<Paginated<LoadLogRow> | LoadLogRow[]>("/training/load-logs/"),
+  );
+}
+
+export function fetchProgress() {
+  return apiFetch<ProgressSummary>("/training/progress/");
+}
+
+export function fetchNotifications() {
+  return apiFetch<Notification[]>("/notifications/");
+}
+
+export function fetchSiteSettings() {
+  return apiFetch<{ brandName: string; ninaAvatarNote: string }>("/branding/settings/");
+}
+
+export function patchSiteSettings(payload: { brandName?: string; ninaAvatarNote?: string }) {
+  return apiFetch<{ brandName: string; ninaAvatarNote: string }>("/branding/settings/", {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function createSession(payload: {
+  workoutId: string;
+  startedAt: string;
+  finishedAt?: string;
+  completedExercises: number;
+  difficulty?: string;
+  note?: string;
+  minutes: number;
+  calories: number;
+  place?: string;
+}) {
+  return apiFetch("/training/sessions/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export type NinaChatResponse = {
+  message: AiChatMessage;
+  userMessage?: AiChatMessage;
+  knowledgeHash?: string;
+  model?: string;
+};
+
+export async function askNinaApi(message: string, context: Record<string, unknown>) {
+  return apiFetch<NinaChatResponse>("/assistant/nina/chat/", {
+    method: "POST",
+    body: JSON.stringify({ message, context }),
+  });
+}
+
+export function analyzeMovementApi(payload: {
+  exercise: string;
+  elapsedSeconds: number;
+  consentAccepted?: boolean;
+  sessionId?: number;
+}) {
+  return apiFetch<{
+    sessionId: number;
+    score: number;
+    reps: number;
+    cues: string[];
+    disclaimer: string;
+  }>("/movement/analyze/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
