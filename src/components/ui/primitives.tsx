@@ -7,7 +7,7 @@ export function Button({
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "ghost" | "danger" }) {
   const styles = {
-    primary: "bg-[#e07a4a] text-white hover:bg-[#c45d32] disabled:opacity-50",
+    primary: "bg-coral text-white hover:bg-coral-deep disabled:opacity-50",
     secondary: "bg-white text-stone-800 border border-stone-200 hover:bg-stone-50",
     ghost: "bg-transparent text-stone-700 hover:bg-stone-100",
     danger: "bg-rose-100 text-rose-800 hover:bg-rose-200",
@@ -15,7 +15,7 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed",
+        "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c45d32] disabled:cursor-not-allowed",
         styles[variant],
         className,
       )}
@@ -25,7 +25,7 @@ export function Button({
 }
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={cn("rounded-2xl border border-stone-200/80 bg-white shadow-sm", className)}>{children}</div>;
+  return <div className={cn("rounded-lg border border-stone-200/80 bg-white shadow-[0_1px_2px_rgba(28,25,23,0.04)]", className)}>{children}</div>;
 }
 
 export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "green" | "amber" | "live" }) {
@@ -39,11 +39,11 @@ export function Badge({ children, tone = "neutral" }: { children: ReactNode; ton
 }
 
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={cn("w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#e07a4a]", props.className)} />;
+  return <input {...props} className={cn("w-full rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-sm outline-none transition-colors placeholder:text-stone-400 focus:border-[#e07a4a]", props.className)} />;
 }
 
 export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea {...props} className={cn("w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#e07a4a]", props.className)} />;
+  return <textarea {...props} className={cn("w-full rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-sm outline-none transition-colors placeholder:text-stone-400 focus:border-[#e07a4a]", props.className)} />;
 }
 
 export function Progress({ value }: { value: number }) {

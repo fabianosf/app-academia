@@ -10,24 +10,24 @@ export function AppHeader() {
   const hour = new Date().getHours();
   const hello = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-stone-200/80 bg-[#f7f4ef]/90 px-4 py-3 backdrop-blur md:px-8">
+    <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-stone-200/70 bg-paper/90 px-4 py-3 backdrop-blur md:px-8">
       <div>
         <p className="text-xs text-stone-500 md:hidden">{brand}</p>
         <p className="font-display text-base font-semibold md:text-lg">{hello}, {user.name}</p>
         <p className="text-xs text-stone-500">{user.streakDays} dias em movimento</p>
       </div>
       <div className="flex items-center gap-2">
-        <Link to="/nina" className="hidden items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-2 text-sm font-medium text-[#c45d32] sm:inline-flex" aria-label="Atalho para a Nina">
+        <Link to="/nina" className="hidden items-center gap-2 rounded-lg border border-[#e7d5ca] bg-[#fbf1eb] px-3 py-2 text-sm font-semibold text-[#a95335] transition-colors hover:bg-[#f6e8df] sm:inline-flex" aria-label="Atalho para a Nina">
           <Sparkles size={16} /> Nina
         </Link>
-        <button className="relative rounded-full border border-stone-200 bg-white p-2" aria-label="Notificações" onClick={() => setOpen((v) => !v)}>
+        <button className="relative rounded-lg border border-stone-200/80 bg-white p-2 transition-colors hover:bg-stone-50" aria-label="Notificações" onClick={() => setOpen((v) => !v)}>
           <Bell size={18} />
           <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#e07a4a]" />
         </button>
-        <Link to="/perfil" className="grid h-10 w-10 place-items-center rounded-full bg-stone-900 text-sm font-semibold text-white" aria-label="Perfil">{user.avatarInitials}</Link>
+        <Link to="/perfil" className="grid h-10 w-10 place-items-center rounded-lg bg-forest text-sm font-semibold text-white transition-colors hover:bg-[#304b3e]" aria-label="Perfil">{user.avatarInitials}</Link>
       </div>
       {open && (
-        <div className="absolute right-4 top-16 w-80 rounded-2xl border border-stone-200 bg-white p-3 shadow-lg">
+        <div className="absolute right-4 top-16 w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-stone-200 bg-white p-3 shadow-lg">
           <p className="mb-2 text-sm font-semibold">Notificações</p>
           <ul className="space-y-2">
             {notifications.map((n) => (
@@ -46,8 +46,8 @@ export function AppHeader() {
 
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
-    <div className="mb-6">
-      <h1 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">{title}</h1>
+    <div className="mb-7">
+      <h1 className="font-display text-3xl font-semibold tracking-tight text-forest md:text-4xl">{title}</h1>
       {subtitle && <p className="mt-1 max-w-2xl text-sm text-stone-600">{subtitle}</p>}
     </div>
   );
@@ -56,7 +56,7 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
 export function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
     <div className="mb-3 flex items-center justify-between">
-      <h2 className="font-display text-lg font-semibold">{title}</h2>
+      <h2 className="font-display text-lg font-semibold text-forest">{title}</h2>
       {action}
     </div>
   );

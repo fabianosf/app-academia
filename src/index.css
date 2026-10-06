@@ -1,25 +1,40 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Source Sans 3", "Segoe UI", sans-serif;
-  --font-display: "Outfit", "Source Sans 3", sans-serif;
-  --color-ink: #1c1917;
-  --color-paper: #f7f4ef;
-  --color-coral: #e07a4a;
-  --color-coral-deep: #c45d32;
-  --color-lime: #6f8f4e;
+  --font-sans: "DM Sans", "Segoe UI", sans-serif;
+  --font-display: "DM Serif Display", Georgia, serif;
+  --color-ink: #202621;
+  --color-paper: #f5f7f4;
+  --color-coral: #c96f4d;
+  --color-coral-deep: #a95335;
+  --color-lime: #84976a;
+  --color-forest: #243a31;
+  --color-sage: #e8eee7;
 }
 
 html, body, #root { min-height: 100%; }
+html { scroll-behavior: smooth; }
 body {
   margin: 0;
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 h1, h2, h3, .font-display { font-family: var(--font-display); }
+h1, h2, h3, .font-display { letter-spacing: 0; }
+h1, h2, h3, p { text-wrap: pretty; }
 :focus-visible { outline: 2px solid #c45d32; outline-offset: 2px; }
+.rounded-2xl { border-radius: 0.5rem; }
+.page-content { animation: page-enter 220ms ease-out both; }
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.mobile-nav { padding-bottom: max(0.25rem, env(safe-area-inset-bottom)); }
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;

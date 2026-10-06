@@ -15,31 +15,31 @@ const items = [
 export function AppSidebar() {
   const { brand } = useApp();
   return (
-    <aside className="hidden w-64 shrink-0 border-r border-stone-200 bg-white md:flex md:flex-col">
-      <div className="px-5 py-6">
+    <aside className="hidden w-60 shrink-0 border-r border-stone-200/80 bg-white md:sticky md:top-0 md:flex md:h-screen md:flex-col">
+      <div className="border-b border-stone-100 px-5 py-6">
         <p className="font-display text-lg font-semibold tracking-tight text-stone-900">{brand}</p>
-        <p className="text-xs text-stone-500">Treino com calma e consistência</p>
+        <p className="mt-0.5 text-xs text-stone-500">Treino com calma e consistência</p>
       </div>
-      <nav className="flex flex-1 flex-col gap-1 px-3" aria-label="Principal">
+      <nav className="flex flex-1 flex-col gap-1 px-3 py-4" aria-label="Principal">
         {items.map((item) => (
-          <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => cn("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium", isActive ? "bg-orange-50 text-[#c45d32]" : "text-stone-600 hover:bg-stone-50")}>
+          <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => cn("flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors", isActive ? "bg-orange-50 text-[#b8542c]" : "text-stone-600 hover:bg-stone-50 hover:text-stone-900")}>
             <item.icon size={18} aria-hidden />
             {item.label}
           </NavLink>
         ))}
       </nav>
-      <div className="p-4 text-xs text-stone-400">Conteúdo educativo. Não substitui avaliação profissional.</div>
+      <div className="border-t border-stone-100 p-4 text-xs leading-relaxed text-stone-400">Conteúdo educativo. Não substitui avaliação profissional.</div>
     </aside>
   );
 }
 
 export function MobileBottomNav() {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-stone-200 bg-white/95 px-1 py-1 backdrop-blur md:hidden" aria-label="Navegação móvel">
+    <nav className="mobile-nav fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-stone-200/80 bg-white/95 px-1 pt-1 shadow-[0_-4px_20px_rgba(28,25,23,0.04)] backdrop-blur md:hidden" aria-label="Navegação móvel">
       {items.map((item) => (
-        <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => cn("flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-lg text-[10px] font-medium", isActive ? "text-[#c45d32]" : "text-stone-500")}>
+        <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => cn("flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-md text-[10px] font-medium transition-colors", isActive ? "text-[#b8542c]" : "text-stone-500 hover:text-stone-800")}>
           <item.icon size={18} aria-hidden />
-          {item.label}
+          <span className="max-w-full truncate px-0.5">{item.label}</span>
         </NavLink>
       ))}
     </nav>
