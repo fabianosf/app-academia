@@ -4,16 +4,16 @@ from datetime import timedelta
 from pathlib import Path
 import os
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv(
-    "DJANGO_SECRET_KEY",
-    "django-insecure-forma-dev-only-change-in-production",
-)
+INSECURE_DEV_SECRET = "django-insecure-forma-dev-only-change-in-production"
+
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", INSECURE_DEV_SECRET)
 
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
 
@@ -26,6 +26,19 @@ ALLOWED_HOSTS = [
 ]
 if DEBUG and "*" not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append("*")
+
+# Produção: falha cedo se configuração insegura.
+if not DEBUG:
+    if not SECRET_KEY or SECRET_KEY == INSECURE_DEV_SECRET:
+        raise ImproperlyConfigured(
+            "Defina DJANGO_SECRET_KEY forte; o valor de desenvolvimento não é "
+            "permitido com DJANGO_DEBUG=false."
+        )
+    if not ALLOWED_HOSTS or "*" in ALLOWED_HOSTS:
+        raise ImproperlyConfigured(
+            "Com DJANGO_DEBUG=false, defina DJANGO_ALLOWED_HOSTS explícitos "
+            "(sem '*')."
+        )
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -114,6 +127,16 @@ CORS_ALLOWED_ORIGINS = [
     ).split(",")
     if o.strip()
 ]
+# Em DEBUG, libera origens da LAN (celular na mesma Wi‑Fi), HTTP e HTTPS.
+CORS_ALLOWED_ORIGIN_REGEXES = (
+    [
+        r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+        r"^https?://192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$",
+        r"^https?://10\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$",
+    ]
+    if DEBUG
+    else []
+)
 CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {

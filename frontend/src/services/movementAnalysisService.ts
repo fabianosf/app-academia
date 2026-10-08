@@ -16,11 +16,14 @@ export interface MovementFrameResult {
 }
 
 export async function analyzeFrame(input: MovementFrameInput): Promise<MovementFrameResult> {
+  if (!input.consentAccepted) {
+    throw new Error("Consentimento explícito é obrigatório para a análise demonstrativa.");
+  }
   const data = await analyzeMovementApi({
     exercise: input.exercise,
     elapsedSeconds: input.elapsedSeconds,
     sessionId: input.sessionId,
-    consentAccepted: input.consentAccepted ?? true,
+    consentAccepted: true,
   });
   return {
     score: data.score,

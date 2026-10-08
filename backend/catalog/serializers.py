@@ -24,6 +24,12 @@ class ExerciseSerializer(serializers.ModelSerializer):
             "place",
         ]
 
+    def create(self, validated_data):
+        import uuid
+
+        validated_data.setdefault("public_id", f"e{uuid.uuid4().hex[:10]}")
+        return super().create(validated_data)
+
 
 class WorkoutSerializer(serializers.ModelSerializer):
     id = serializers.CharField(source="public_id", read_only=True)

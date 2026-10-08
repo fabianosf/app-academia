@@ -13,9 +13,27 @@ DISCLAIMER = (
 
 class MovementAnalyzeView(APIView):
     def post(self, request):
+        if "consentAccepted" not in request.data:
+            return Response(
+                {"detail": "Consentimento explícito é obrigatório."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        consent = bool(request.data.get("consentAccepted"))
+        if not consent:
+            return Response(
+                {"detail": "Aceite o consentimento para usar a análise demonstrativa."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         exercise = request.data.get("exercise") or "Exercício"
-        elapsed = int(request.data.get("elapsedSeconds") or 0)
-        consent = bool(request.data.get("consentAccepted", True))
+        try:
+            elapsed = int(request.data.get("elapsedSeconds") or 0)
+        except (TypeError, ValueError):
+            return Response(
+                {"detail": "elapsedSeconds inválido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        elapsed = max(0, min(elapsed, 86_400))
 
         session_id = request.data.get("sessionId")
         session = None
@@ -27,7 +45,7 @@ class MovementAnalyzeView(APIView):
             session = MovementSession.objects.create(
                 user=request.user,
                 exercise_label=exercise,
-                consent_accepted=consent,
+                consent_accepted=True,
             )
 
         score = 78

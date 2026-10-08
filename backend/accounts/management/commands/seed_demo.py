@@ -3,8 +3,9 @@
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
 from accounts.models import UserProfile
@@ -86,6 +87,10 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        if not settings.DEBUG:
+            raise CommandError(
+                "seed_demo só é permitido com DJANGO_DEBUG=true (ambiente local)."
+            )
         if options["flush"]:
             self.stdout.write("Limpando dados demos...")
             WorkoutSession.objects.all().delete()
@@ -102,6 +107,7 @@ class Command(BaseCommand):
             LiveClass.objects.all().delete()
             Instructor.objects.all().delete()
 
+        # Conta demo: staff (editar catálogo local), nunca superuser.
         user, created = User.objects.get_or_create(
             username="fabiano",
             defaults={
@@ -113,14 +119,15 @@ class Command(BaseCommand):
                 "subscription_status": User.SubscriptionStatus.ATIVO,
                 "onboarded": True,
                 "is_staff": True,
-                "is_superuser": True,
+                "is_superuser": False,
             },
         )
         if created or not user.has_usable_password():
             user.set_password("forma123")
+            user.is_staff = True
+            user.is_superuser = False
             user.save()
         else:
-            # keep password; ensure flags
             user.email = "fabiano@postay.com.br"
             user.name = "Fabiano"
             user.avatar_initials = "FF"
@@ -128,8 +135,13 @@ class Command(BaseCommand):
             user.plan = User.Plan.COMPLETO
             user.onboarded = True
             user.is_staff = True
-            user.is_superuser = True
+            user.is_superuser = False
             user.save()
+        self.stdout.write(
+            self.style.WARNING(
+                "Demo: fabiano / forma123 (apenas DEBUG). Não use em produção."
+            )
+        )
 
         profile, _ = UserProfile.objects.get_or_create(user=user)
         profile.goal = UserProfile.Goal.CONDICIONAMENTO

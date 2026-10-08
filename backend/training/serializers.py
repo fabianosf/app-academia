@@ -1,9 +1,8 @@
 from rest_framework import serializers
 
-from catalog.models import Exercise, Workout
+from catalog.models import Workout
 
 from .models import (
-    Achievement,
     LoadLog,
     UserAchievement,
     UserGoal,
@@ -47,15 +46,27 @@ class WorkoutSessionSerializer(serializers.ModelSerializer):
 
 
 class WorkoutSessionCreateSerializer(serializers.Serializer):
-    workoutId = serializers.CharField()
+    workoutId = serializers.SlugRelatedField(
+        source="workout",
+        queryset=Workout.objects.all(),
+        slug_field="public_id",
+    )
     startedAt = serializers.DateTimeField()
     finishedAt = serializers.DateTimeField(required=False, allow_null=True)
-    completedExercises = serializers.IntegerField(default=0)
-    difficulty = serializers.CharField(required=False, allow_blank=True)
-    note = serializers.CharField(required=False, allow_blank=True)
-    minutes = serializers.IntegerField(default=0)
-    calories = serializers.IntegerField(default=0)
-    place = serializers.CharField(required=False, allow_blank=True)
+    completedExercises = serializers.IntegerField(
+        required=False, default=0, min_value=0, max_value=500
+    )
+    difficulty = serializers.CharField(
+        required=False, allow_blank=True, default="", max_length=40
+    )
+    note = serializers.CharField(required=False, allow_blank=True, max_length=2000)
+    minutes = serializers.IntegerField(
+        required=False, allow_null=True, min_value=0, max_value=600
+    )
+    calories = serializers.IntegerField(
+        required=False, allow_null=True, min_value=0, max_value=5000
+    )
+    place = serializers.CharField(required=False, allow_blank=True, max_length=40)
     date = serializers.DateField(required=False)
 
     def create(self, validated_data):
@@ -63,23 +74,28 @@ class WorkoutSessionCreateSerializer(serializers.Serializer):
         import uuid
 
         user = self.context["request"].user
-        workout = Workout.objects.get(public_id=validated_data["workoutId"])
+        workout = validated_data["workout"]
+        started = validated_data["startedAt"]
         session_date = validated_data.get("date") or (
-            validated_data["startedAt"].date()
-            if hasattr(validated_data["startedAt"], "date")
-            else date_cls.today()
+            started.date() if hasattr(started, "date") else date_cls.today()
         )
+        minutes = validated_data.get("minutes")
+        if minutes is None:
+            minutes = workout.duration_min
+        calories = validated_data.get("calories")
+        if calories is None:
+            calories = workout.calories
         return WorkoutSession.objects.create(
             public_id=f"h{uuid.uuid4().hex[:8]}",
             user=user,
             workout=workout,
-            started_at=validated_data["startedAt"],
+            started_at=started,
             finished_at=validated_data.get("finishedAt"),
             completed_exercises=validated_data.get("completedExercises", 0),
             difficulty=validated_data.get("difficulty", ""),
             note=validated_data.get("note", ""),
-            minutes=validated_data.get("minutes", workout.duration_min),
-            calories=validated_data.get("calories", workout.calories),
+            minutes=minutes,
+            calories=calories,
             place=validated_data.get("place") or workout.place,
             date=session_date,
         )

@@ -8,10 +8,14 @@ import { useApp } from "@/hooks/AppContext";
 import { ApiError } from "@/services/http";
 import {
   createSpeechRecognition,
+  ensureMicrophonePermission,
+  isSecureVoiceContext,
   isSpeechRecognitionSupported,
   isSpeechSynthesisSupported,
   speakText,
   stopSpeaking,
+  unlockSpeechAudio,
+  voiceCapabilityMessage,
   type SpeechRecognitionLike,
 } from "@/services/ninaVoiceService";
 
@@ -57,6 +61,8 @@ export function NinaPage() {
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const sttSupported = isSpeechRecognitionSupported();
   const ttsSupported = isSpeechSynthesisSupported();
+  const secure = isSecureVoiceContext();
+  const voiceHint = voiceCapabilityMessage();
 
   useEffect(() => {
     return () => {
@@ -77,6 +83,7 @@ export function NinaPage() {
   const send = useCallback(
     async (value: string) => {
       if (!value.trim()) return;
+      unlockSpeechAudio();
       recognitionRef.current?.stop();
       setListening(false);
       stopSpeaking();
@@ -122,14 +129,29 @@ export function NinaPage() {
     setListening(false);
   };
 
-  const startListening = () => {
+  const startListening = async () => {
+    unlockSpeechAudio();
+    if (!secure) {
+      setError(
+        "Microfone bloqueado em HTTP. No celular use https://192.168.0.17:5173 e aceite o aviso de certificado.",
+      );
+      return;
+    }
     if (!sttSupported) {
-      setError("Seu navegador não suporta ditado por voz. Use Chrome ou Edge.");
+      setError(
+        "Este navegador não tem ditado por voz (comum no iPhone). Digite a pergunta ou use Chrome no Android.",
+      );
       return;
     }
     setError("");
     stopSpeaking();
     setSpeaking(false);
+
+    const allowed = await ensureMicrophonePermission();
+    if (!allowed) {
+      setError("Permissão de microfone negada. Libere o microfone para este site.");
+      return;
+    }
 
     const recognition = createSpeechRecognition({
       onStart: () => setListening(true),
@@ -156,15 +178,22 @@ export function NinaPage() {
 
   const toggleListen = () => {
     if (listening) stopListening();
-    else startListening();
+    else void startListening();
   };
 
   const toggleSpeakReplies = () => {
+    unlockSpeechAudio();
     if (speakReplies) {
       stopSpeaking();
       setSpeaking(false);
     }
     setSpeakReplies((v) => !v);
+  };
+
+  const replayMessage = (content: string) => {
+    unlockSpeechAudio();
+    setSpeaking(true);
+    speakText(content, { onEnd: () => setSpeaking(false) });
   };
 
   return (
@@ -222,6 +251,8 @@ export function NinaPage() {
           <div>
             <dt className="text-stone-500">Voz</dt>
             <dd className="text-xs text-stone-600">
+              {secure ? "HTTPS ok" : "Precisa HTTPS"}
+              {" · "}
               {sttSupported ? "Ditado disponível" : "Ditado indisponível neste navegador"}
               {" · "}
               {ttsSupported ? "Respostas faladas disponíveis" : "Leitura em voz indisponível"}
@@ -234,6 +265,11 @@ export function NinaPage() {
           title="Nina"
           subtitle="Assistente com cérebro ANS (saúde, nutrição e treino). Fale ou escreva."
         />
+        {voiceHint && (
+          <p className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
+            {voiceHint}
+          </p>
+        )}
         {ansActive && (
           <p className="mb-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">
             Cérebro ANS ativado nesta conversa — respostas ancoradas em Academia Nutrição Saúde v1.0.
@@ -247,7 +283,16 @@ export function NinaPage() {
                 m.role === "user" ? "ml-auto bg-stone-900 text-white" : "bg-orange-50"
               }`}
             >
-              {m.content}
+              <p>{m.content}</p>
+              {m.role === "assistant" && ttsSupported && (
+                <button
+                  type="button"
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[#b1603d]"
+                  onClick={() => replayMessage(m.content)}
+                >
+                  <Volume2 size={12} /> Ouvir
+                </button>
+              )}
             </div>
           ))}
           {loading && <p className="text-sm text-stone-500">Nina está escrevendo…</p>}
@@ -261,7 +306,10 @@ export function NinaPage() {
             <button
               key={s}
               className="rounded-full border border-stone-200 px-3 py-1 text-xs"
-              onClick={() => send(s)}
+              onClick={() => {
+                unlockSpeechAudio();
+                void send(s);
+              }}
             >
               {s}
             </button>
@@ -271,7 +319,7 @@ export function NinaPage() {
           className="mt-3 flex flex-wrap gap-2"
           onSubmit={(e: FormEvent) => {
             e.preventDefault();
-            send(text);
+            void send(text);
           }}
         >
           <Input
@@ -286,7 +334,7 @@ export function NinaPage() {
             variant="secondary"
             onClick={toggleListen}
             aria-pressed={listening}
-            disabled={!sttSupported || loading}
+            disabled={loading || (!sttSupported && secure)}
             title={sttSupported ? "Falar com a Nina" : "Voz não suportada neste navegador"}
           >
             {listening ? <MicOff size={16} /> : <Mic size={16} />}
@@ -311,7 +359,7 @@ export function NinaPage() {
         <div className="mt-3">
           <SafetyNotice>
             A Nina oferece orientação educativa. Não substitui médico, fisioterapeuta ou educador
-            físico. A voz usa o reconhecimento e a síntese do navegador (pt-BR).
+            físico. No celular use HTTPS e, se a resposta não falar sozinha, toque em Ouvir.
           </SafetyNotice>
         </div>
       </section>

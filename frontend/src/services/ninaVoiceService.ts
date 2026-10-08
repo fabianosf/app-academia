@@ -33,12 +33,55 @@ function getRecognitionCtor(): SpeechRecognitionCtor | null {
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
+/** Microfone / SpeechRecognition exigem HTTPS (ou localhost). */
+export function isSecureVoiceContext() {
+  return typeof window !== "undefined" && window.isSecureContext;
+}
+
 export function isSpeechRecognitionSupported() {
   return Boolean(getRecognitionCtor());
 }
 
 export function isSpeechSynthesisSupported() {
   return typeof window !== "undefined" && "speechSynthesis" in window;
+}
+
+export function voiceCapabilityMessage(): string | null {
+  if (!isSecureVoiceContext()) {
+    return "No celular, abra o app em HTTPS (ex.: https://IP:5173) e aceite o certificado para liberar o microfone.";
+  }
+  if (!isSpeechRecognitionSupported()) {
+    return "Este navegador não tem ditado por voz (comum no iPhone). Use Chrome/Edge no Android, ou digite.";
+  }
+  return null;
+}
+
+/** Desbloqueia áudio no mobile (precisa de gesto do usuário). */
+export function unlockSpeechAudio() {
+  if (!isSpeechSynthesisSupported()) return;
+  try {
+    window.speechSynthesis.cancel();
+    const warm = new SpeechSynthesisUtterance(" ");
+    warm.volume = 0;
+    warm.rate = 2;
+    window.speechSynthesis.speak(warm);
+    window.speechSynthesis.cancel();
+  } catch {
+    /* ignore */
+  }
+}
+
+export async function ensureMicrophonePermission(): Promise<boolean> {
+  if (!isSecureVoiceContext() || !navigator.mediaDevices?.getUserMedia) {
+    return false;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach((t) => t.stop());
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function createSpeechRecognition(handlers: {
@@ -62,7 +105,7 @@ export function createSpeechRecognition(handlers: {
   recognition.onerror = (ev) => {
     const code = ev.error ?? "error";
     const map: Record<string, string> = {
-      "not-allowed": "Permissão de microfone negada. Libere o microfone no navegador.",
+      "not-allowed": "Permissão de microfone negada. Libere o microfone nas configurações do navegador/site.",
       "no-speech": "Não ouvi nada. Tente de novo.",
       "audio-capture": "Não encontrei um microfone disponível.",
       network: "Falha de rede no reconhecimento de voz.",
@@ -112,11 +155,17 @@ export function speakText(text: string, opts?: { onEnd?: () => void }) {
   utter.onerror = () => opts?.onEnd?.();
   // Chrome sometimes returns empty voices until voiceschanged
   if (!voice && window.speechSynthesis.getVoices().length === 0) {
-    window.speechSynthesis.onvoiceschanged = () => {
+    const speakWhenReady = () => {
       const v = pickPtBrVoice();
       if (v) utter.voice = v;
       window.speechSynthesis.speak(utter);
+      window.speechSynthesis.removeEventListener("voiceschanged", speakWhenReady);
     };
+    window.speechSynthesis.addEventListener("voiceschanged", speakWhenReady);
+    // fallback se voiceschanged não disparar
+    window.setTimeout(() => {
+      if (!window.speechSynthesis.speaking) speakWhenReady();
+    }, 250);
     return;
   }
   window.speechSynthesis.speak(utter);

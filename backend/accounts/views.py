@@ -10,8 +10,16 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
+
 from .models import UserProfile
-from .serializers import RegisterSerializer, UserProfileSerializer, UserSerializer
+from .serializers import (
+    RegisterSerializer,
+    UserMeUpdateSerializer,
+    UserProfileSerializer,
+    UserSerializer,
+)
 
 User = get_user_model()
 
@@ -45,10 +53,12 @@ class MeView(APIView):
 
     def patch(self, request):
         user = request.user
-        for field in ("name", "email", "theme", "onboarded", "plan"):
-            if field in request.data:
-                setattr(user, field, request.data[field])
-        user.save()
+        me_serializer = UserMeUpdateSerializer(
+            user, data=request.data, partial=True
+        )
+        me_serializer.is_valid(raise_exception=True)
+        me_serializer.save()
+
         profile_data = request.data.get("profile")
         if profile_data is not None:
             profile, _ = UserProfile.objects.get_or_create(user=user)
@@ -133,11 +143,6 @@ class PasswordResetConfirmView(APIView):
         uid = request.data.get("uid") or ""
         token = request.data.get("token") or ""
         password = request.data.get("password") or ""
-        if len(password) < 6:
-            return Response(
-                {"detail": "A senha precisa ter pelo menos 6 caracteres."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
         try:
             user_id = force_str(urlsafe_base64_decode(uid))
             user = User.objects.get(pk=user_id)
@@ -149,6 +154,13 @@ class PasswordResetConfirmView(APIView):
         if not default_token_generator.check_token(user, token):
             return Response(
                 {"detail": "Link inválido ou expirado."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            validate_password(password, user=user)
+        except DjangoValidationError as exc:
+            return Response(
+                {"detail": list(exc.messages)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         user.set_password(password)

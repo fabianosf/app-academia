@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
 from .models import UserProfile
@@ -78,7 +80,14 @@ class UserSerializer(serializers.ModelSerializer):
             "theme",
             "profile",
         ]
-        read_only_fields = ["id", "username"]
+        read_only_fields = [
+            "id",
+            "username",
+            "plan",
+            "subscription_status",
+            "streak_days",
+            "avatar_initials",
+        ]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -88,12 +97,43 @@ class UserSerializer(serializers.ModelSerializer):
         return data
 
 
+class UserMeUpdateSerializer(serializers.ModelSerializer):
+    """Campos editáveis pelo próprio utilizador — nunca plan/subscription."""
+
+    class Meta:
+        model = User
+        fields = ["name", "email", "theme", "onboarded"]
+
+    def validate_email(self, value):
+        value = (value or "").strip()
+        if not value:
+            return value
+        qs = User.objects.filter(email__iexact=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("Este e-mail já está em uso.")
+        return value
+
+    def validate_theme(self, value):
+        if value not in ("light", "dark"):
+            raise serializers.ValidationError("Tema inválido.")
+        return value
+
+
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=6)
+    password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
         fields = ["username", "email", "password", "name"]
+
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(list(exc.messages)) from exc
+        return value
 
     def create(self, validated_data):
         password = validated_data.pop("password")

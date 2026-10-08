@@ -21,11 +21,12 @@ python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py seed_demo
-# Nina / ANS LLM — copie .env.example e defina OPENAI_API_KEY
-cp .env.example .env
+cp .env.example .env   # defina OPENAI_API_KEY para a Nina
+python manage.py seed_demo   # só com DJANGO_DEBUG=true; conta staff (não superuser)
 python manage.py runserver 8000
 ```
+
+> Segurança: `seed_demo` aborta se `DEBUG=false`. Credenciais demo são só para ambiente local. Em produção use `DJANGO_DEBUG=false`, `DJANGO_SECRET_KEY` forte e `DJANGO_ALLOWED_HOSTS` explícitos.
 
 ### Nina (cérebro ANS + LLM)
 

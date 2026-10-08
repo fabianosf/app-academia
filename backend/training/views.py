@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import timedelta
 
+from django.db.models import Count, Sum
 from django.utils import timezone
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
@@ -128,32 +129,40 @@ class LoadLogListCreateView(generics.ListCreateAPIView):
 
 class ProgressSummaryView(APIView):
     def get(self, request):
-        sessions = WorkoutSession.objects.filter(
+        finished = WorkoutSession.objects.filter(
             user=request.user, finished_at__isnull=False
         )
-        # weekly frequency last 7 days (labels Seg-Dom)
         days_pt = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
         today = timezone.localdate()
-        # Monday-based week
         start = today - timedelta(days=today.weekday())
+        end = start + timedelta(days=6)
+
+        week_qs = (
+            finished.filter(date__gte=start, date__lte=end)
+            .values("date")
+            .annotate(treinos=Count("id"), minutos=Sum("minutes"))
+        )
+        by_date = {row["date"]: row for row in week_qs}
         weekly = []
         for i, label in enumerate(days_pt):
             d = start + timedelta(days=i)
-            day_sessions = [s for s in sessions if s.date == d]
+            row = by_date.get(d)
             weekly.append(
                 {
                     "day": label,
-                    "treinos": len(day_sessions),
-                    "minutos": sum(s.minutes for s in day_sessions),
+                    "treinos": row["treinos"] if row else 0,
+                    "minutos": int(row["minutos"] or 0) if row else 0,
                 }
             )
 
         muscle_map = defaultdict(int)
-        counts = defaultdict(int)
-        for s in sessions.select_related("workout"):
+        # Janela recente para músculos (90 dias) evita varrer todo o histórico.
+        recent = finished.filter(date__gte=today - timedelta(days=90)).select_related(
+            "workout"
+        )
+        for s in recent:
             for m in s.workout.muscles or []:
                 muscle_map[m] += 1
-                counts[m] += 1
         muscle_progress = [
             {"group": k, "value": min(100, v * 12)}
             for k, v in sorted(muscle_map.items(), key=lambda x: -x[1])[:5]
@@ -169,6 +178,6 @@ class ProgressSummaryView(APIView):
                 "streakDays": request.user.streak_days,
                 "weeklyFrequency": weekly,
                 "muscleProgress": muscle_progress,
-                "totalSessions": sessions.count(),
+                "totalSessions": finished.count(),
             }
         )
