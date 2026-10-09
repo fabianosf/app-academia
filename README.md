@@ -97,7 +97,9 @@ GitHub Actions (`.github/workflows/ci.yml`) em push/PR para `main`:
 
 ### Assistente de exercícios (texto + voz)
 
-Na Nina, modo **Demonstrar exercício**: linguagem natural, clarificação, passos escritos, match de demos aprovadas e jobs de vídeo. Sem `WEB_SEARCH_*` / `VIDEO_DEMO_*` a API responde de forma honesta (`search_unavailable` / `not_configured`) — não simula pesquisa nem vídeo pronto. Vídeos novos ficam em `review` até aprovação staff. Voz usa Web Speech no browser; áudio bruto não é guardado.
+Na Nina, modo **Demonstrar exercício**: linguagem natural, clarificação, passos escritos, match de demos aprovadas e jobs de vídeo. Sem `WEB_SEARCH_*` / `VIDEO_DEMO_*` a API responde de forma honesta (`search_unavailable` / `not_configured`) — não simula pesquisa nem vídeo pronto. Vídeos novos ficam em `review` até aprovação staff na página **Administração**. Voz usa Web Speech no browser; áudio bruto não é guardado.
+
+Guia de fornecedores (contrato HTTP): [`docs/INTEGRACOES_ASSISTENTE.md`](docs/INTEGRACOES_ASSISTENTE.md).
 
 ## Observações
 

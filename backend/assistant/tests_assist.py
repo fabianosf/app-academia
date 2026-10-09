@@ -208,3 +208,27 @@ class ExerciseAssistApiTests(TestCase):
             format="json",
         )
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_normal_user_cannot_list_review_demos(self):
+        ExerciseDemo.objects.create(
+            public_id="drev-list",
+            exercise_key="teste",
+            exercise_name="Teste",
+            status=ExerciseDemo.Status.REVIEW,
+            duration_sec=8,
+        )
+        denied = self.client.get("/api/assistant/demos/?status=review")
+        self.assertEqual(denied.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_staff_can_list_review_demos(self):
+        ExerciseDemo.objects.create(
+            public_id="drev-list2",
+            exercise_key="teste2",
+            exercise_name="Teste 2",
+            status=ExerciseDemo.Status.REVIEW,
+            duration_sec=8,
+        )
+        self.client.force_authenticate(user=self.staff)
+        ok = self.client.get("/api/assistant/demos/?status=review")
+        self.assertEqual(ok.status_code, status.HTTP_200_OK)
+        self.assertTrue(any(d["id"] == "drev-list2" for d in ok.data))

@@ -122,6 +122,7 @@ function mapUser(me: ApiUser): User {
     avatarInitials: me.avatarInitials,
     streakDays: me.streakDays,
     plan: me.plan,
+    isStaff: Boolean((me as ApiUser & { isStaff?: boolean }).isStaff),
   };
 }
 

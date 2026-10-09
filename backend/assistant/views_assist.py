@@ -93,7 +93,17 @@ class ExerciseAssistClarifyView(APIView):
 
 class ApprovedDemoListView(APIView):
     def get(self, request):
-        qs = ExerciseDemo.objects.filter(status=ExerciseDemo.Status.APPROVED)
+        status_filter = (request.query_params.get("status") or "approved").strip().lower()
+        # Utilizadores normais só veem aprovadas; staff pode pedir review/draft/rejected.
+        if status_filter != "approved" and not request.user.is_staff:
+            return Response(
+                {"detail": "Apenas staff pode listar demos não aprovadas."},
+                status=403,
+            )
+        allowed = {c.value for c in ExerciseDemo.Status}
+        if status_filter not in allowed:
+            return Response({"detail": "status inválido."}, status=400)
+        qs = ExerciseDemo.objects.filter(status=status_filter)
         exercise = request.query_params.get("exercise")
         if exercise:
             qs = qs.filter(exercise_name__icontains=exercise)

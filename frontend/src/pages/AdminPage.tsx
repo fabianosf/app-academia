@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button, Input, Textarea } from "@/components/ui/primitives";
 import { PageHeader } from "@/components/ShellBits";
 import { useApp } from "@/hooks/AppContext";
@@ -6,7 +6,10 @@ import {
   createExerciseApi,
   createLiveClassApi,
   createWorkoutApi,
+  fetchDemos,
   patchSiteSettings,
+  reviewDemoApi,
+  type ExerciseDemoDto,
 } from "@/services/api";
 import { ApiError } from "@/services/http";
 
@@ -27,10 +30,32 @@ export function AdminPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
+  const [reviewQueue, setReviewQueue] = useState<ExerciseDemoDto[]>([]);
+  const [reviewLoading, setReviewLoading] = useState(false);
+
+  const loadReviewQueue = useCallback(async () => {
+    if (!user.isStaff) {
+      setReviewQueue([]);
+      return;
+    }
+    setReviewLoading(true);
+    try {
+      const rows = await fetchDemos("review");
+      setReviewQueue(rows);
+    } catch {
+      setReviewQueue([]);
+    } finally {
+      setReviewLoading(false);
+    }
+  }, [user.isStaff]);
 
   useEffect(() => {
     void refreshTraining();
   }, [refreshTraining]);
+
+  useEffect(() => {
+    void loadReviewQueue();
+  }, [loadReviewQueue]);
 
   const save = async () => {
     if (!title.trim() || !open) return;
@@ -76,16 +101,108 @@ export function AdminPage() {
     }
   };
 
+  const review = async (demoId: string, action: "approve" | "reject") => {
+    try {
+      await reviewDemoApi(demoId, action);
+      toast(action === "approve" ? "Demo aprovada." : "Demo rejeitada.");
+      await loadReviewQueue();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 403) {
+        toast("Apenas staff pode aprovar demos.");
+      } else {
+        toast("Falha ao rever a demo.");
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Administração"
-        subtitle="Conteúdo e marca persistidos na API (requer conta staff)."
+        subtitle="Conteúdo, marca e revisão de demonstrações (requer conta staff)."
       />
       <p className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-600">
-        Sessão: {user.name} · criações de treino/exercício/aula exigem{" "}
-        <strong>is_staff</strong>. A conta demo local já é staff.
+        Sessão: {user.name}
+        {user.isStaff ? " · staff" : " · sem staff"} · criações e aprovação de demos exigem{" "}
+        <strong>is_staff</strong>.
       </p>
+
+      <section className="rounded-2xl border border-stone-200 bg-white p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-display font-semibold">Demos em revisão</h2>
+          <Button type="button" variant="ghost" onClick={() => void loadReviewQueue()}>
+            Atualizar
+          </Button>
+        </div>
+        {!user.isStaff && (
+          <p className="mt-2 text-sm text-stone-500">
+            A tua conta não é staff — a fila de aprovação não está disponível.
+          </p>
+        )}
+        {user.isStaff && reviewLoading && (
+          <p className="mt-2 text-sm text-stone-500">A carregar fila…</p>
+        )}
+        {user.isStaff && !reviewLoading && reviewQueue.length === 0 && (
+          <p className="mt-2 text-sm text-stone-500">
+            Nenhuma demo em revisão. Quando a geração de vídeo estiver configurada, os vídeos
+            novos aparecem aqui até aprovares.
+          </p>
+        )}
+        {user.isStaff && (
+          <ul className="mt-3 space-y-3">
+            {reviewQueue.map((demo) => (
+              <li
+                key={demo.id}
+                className="rounded-xl border border-stone-100 bg-stone-50 p-3 text-sm"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="font-medium">
+                      {demo.exercise_name}
+                      {demo.variation ? ` · ${demo.variation}` : ""}
+                    </p>
+                    <p className="text-xs text-stone-500">
+                      {demo.duration_sec}s · {demo.persona} ·{" "}
+                      {demo.ai_generated ? "IA" : "manual"} · {demo.id}
+                    </p>
+                    {demo.structured_script?.length > 0 && (
+                      <ol className="mt-2 list-decimal pl-4 text-xs text-stone-600">
+                        {demo.structured_script.slice(0, 5).map((s, i) => (
+                          <li key={`${demo.id}-${i}`}>{s}</li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="button" onClick={() => void review(demo.id, "approve")}>
+                      Aprovar
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => void review(demo.id, "reject")}
+                    >
+                      Rejeitar
+                    </Button>
+                  </div>
+                </div>
+                {demo.media_url ? (
+                  <video
+                    className="mt-3 max-h-48 w-full max-w-md rounded-lg bg-black"
+                    controls
+                    src={demo.media_url}
+                  />
+                ) : (
+                  <p className="mt-2 text-xs text-amber-800">
+                    Sem URL de vídeo ainda — podes rejeitar ou esperar o job concluir.
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       <section className="grid gap-3 rounded-2xl border border-stone-200 bg-white p-4 md:grid-cols-2">
         <label className="text-sm">
           Nome da marca
@@ -149,7 +266,7 @@ export function AdminPage() {
         <List title="Aulas" items={liveClasses.map((c) => c.title)} />
       </div>
       <section className="rounded-2xl border border-dashed border-stone-300 p-4">
-        <h2 className="font-display font-semibold">Integrações futuras</h2>
+        <h2 className="font-display font-semibold">Integrações</h2>
         <ul className="mt-2 grid gap-2 text-sm sm:grid-cols-2">
           {["Pagamentos", "Streaming ao vivo", "Visão computacional"].map((i) => (
             <li key={i} className="rounded-xl bg-white p-3">
@@ -159,8 +276,10 @@ export function AdminPage() {
           <li className="rounded-xl bg-emerald-50 p-3 text-emerald-900">
             Auth JWT (cookies) · ativo
           </li>
-          <li className="rounded-xl bg-emerald-50 p-3 text-emerald-900">Banco / API · ativo</li>
-          <li className="rounded-xl bg-emerald-50 p-3 text-emerald-900">Nina / ANS · ativo</li>
+          <li className="rounded-xl bg-emerald-50 p-3 text-emerald-900">Nina / demos · ativo</li>
+          <li className="rounded-xl bg-amber-50 p-3 text-amber-950">
+            Pesquisa web / vídeo avatar · ver docs/INTEGRACOES_ASSISTENTE.md
+          </li>
         </ul>
       </section>
     </div>

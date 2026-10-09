@@ -94,6 +94,7 @@ class UserSerializer(serializers.ModelSerializer):
         data["avatarInitials"] = data.pop("avatar_initials")
         data["streakDays"] = data.pop("streak_days")
         data["subscriptionStatus"] = data.pop("subscription_status")
+        data["isStaff"] = bool(instance.is_staff)
         return data
 
 

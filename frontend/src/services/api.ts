@@ -409,3 +409,15 @@ export function sendAssistFeedback(payload: {
     body: JSON.stringify(payload),
   });
 }
+
+export function fetchDemos(status: string = "approved") {
+  const q = encodeURIComponent(status);
+  return apiFetch<ExerciseDemoDto[]>(`/assistant/demos/?status=${q}`);
+}
+
+export function reviewDemoApi(demoId: string, action: "approve" | "reject") {
+  return apiFetch<ExerciseDemoDto>(`/assistant/demos/${demoId}/review/`, {
+    method: "POST",
+    body: JSON.stringify({ action }),
+  });
+}

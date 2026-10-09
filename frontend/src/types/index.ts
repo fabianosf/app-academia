@@ -14,6 +14,7 @@ export interface User {
   avatarInitials: string;
   streakDays: number;
   plan: "Essencial" | "Completo";
+  isStaff?: boolean;
 }
 
 export interface UserProfile {
