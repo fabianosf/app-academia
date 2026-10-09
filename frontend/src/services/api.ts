@@ -30,13 +30,23 @@ export type ProgressSummary = {
 
 export type LoadLogRow = { id?: number; exercise: string; last: string; note: string };
 
-export async function login(username: string, password: string) {
+export type AuthPortal = "student" | "management";
+
+export async function login(
+  username: string,
+  password: string,
+  portal?: AuthPortal,
+) {
   clearTokens();
-  return apiFetch<{ detail: string }>(
+  return apiFetch<{ detail: string; role?: string; home?: string }>(
     "/auth/token/",
     {
       method: "POST",
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({
+        username,
+        password,
+        ...(portal ? { portal } : {}),
+      }),
     },
     false,
   );
@@ -83,7 +93,16 @@ export async function confirmPasswordReset(payload: {
 /** Tenta sessão via cookie HttpOnly; não faz login automático com demo. */
 export async function tryRestoreSession() {
   try {
-    return await fetchMe();
+    const res = await apiFetch<{ authenticated: boolean; user?: ApiUser }>(
+      "/auth/session/",
+      {},
+      false,
+    );
+    if (!res.authenticated || !res.user) {
+      clearTokens();
+      return null;
+    }
+    return res.user;
   } catch {
     clearTokens();
     return null;
@@ -336,6 +355,7 @@ export type ExerciseDemoDto = {
   media_url: string;
   status: string;
   ai_generated: boolean;
+  persona?: string;
   structured_script: string[];
   source_notes: { title?: string; url?: string }[];
 };
@@ -434,4 +454,153 @@ export function reviewDemoApi(demoId: string, action: "approve" | "reject") {
 
 export function fetchDemoJob(jobId: string) {
   return apiFetch<DemoJobDto>(`/assistant/demos/jobs/${jobId}/`);
+}
+
+export type TeacherDashboard = {
+  period: string;
+  periodDays: number;
+  assignedStudents: number;
+  completedWorkouts: number;
+  weeklyFrequencyAvg: number | null;
+  minutesTrained: number;
+  incomplete: { studentId: number; reason: string }[];
+  notes: string[];
+};
+
+export type TeacherStudentRow = {
+  id: number;
+  name: string;
+  email: string;
+  assignmentStartedAt: string;
+  consents: string[];
+};
+
+export type TeacherStudentDetail = {
+  student: {
+    id: number;
+    name: string;
+    email: string;
+    goal: string | null;
+    level: string | null;
+    place: string | null;
+    assignmentStartedAt: string;
+    consents: string[];
+  };
+  metrics: Record<string, number>;
+  charts: {
+    sessions?: {
+      id: string;
+      date: string | null;
+      minutes: number;
+      workoutName: string;
+      workoutId: string;
+    }[];
+    frequencyByWeek?: { week: string; completed: number }[];
+    goals?: {
+      id: string;
+      label: string;
+      current: number;
+      target: number;
+      unit: string;
+    }[];
+  };
+  gaps: string[];
+};
+
+export function fetchTeacherDashboard(period = "30d") {
+  return apiFetch<TeacherDashboard>(`/teacher/dashboard/?period=${encodeURIComponent(period)}`);
+}
+
+export function fetchTeacherStudents(q = "") {
+  const qs = q ? `?q=${encodeURIComponent(q)}` : "";
+  return apiFetch<{ results: TeacherStudentRow[] }>(`/teacher/students/${qs}`);
+} // path: /teacher/students/?q=
+
+export function fetchTeacherStudentDetail(studentId: number) {
+  return apiFetch<TeacherStudentDetail>(`/teacher/students/${studentId}/`);
+}
+
+export type TeacherSharing = {
+  teacher: { id: number; name: string; email: string; role: string } | null;
+  assignmentStartedAt?: string;
+  categories: {
+    id: string;
+    label: string;
+    active: boolean;
+    description?: string;
+  }[];
+  message?: string;
+  correctionRequestHint?: string;
+};
+
+export function fetchTeacherSharing() {
+  return apiFetch<TeacherSharing>("/me/teacher-sharing/");
+}
+
+export function updateTeacherSharing(category: string, action: "grant" | "revoke") {
+  return apiFetch<TeacherSharing>("/me/teacher-sharing/", {
+    method: "POST",
+    body: JSON.stringify({ category, action }),
+  });
+}
+
+export type AdminUserRow = {
+  id: number;
+  username: string;
+  name: string;
+  email: string;
+  role: string;
+};
+
+export function fetchAdminUsers(role?: string, q?: string) {
+  const params = new URLSearchParams();
+  if (role) params.set("role", role);
+  if (q) params.set("q", q);
+  const qs = params.toString();
+  return apiFetch<{ results: AdminUserRow[] }>(`/admin/users/${qs ? `?${qs}` : ""}`);
+}
+
+export function setAdminUserRole(userId: number, role: string) {
+  return apiFetch<AdminUserRow>(`/admin/users/${userId}/role/`, {
+    method: "POST",
+    body: JSON.stringify({ role }),
+  });
+}
+
+export function fetchAdminAssignments() {
+  return apiFetch<{
+    results: {
+      id: number;
+      teacher: AdminUserRow;
+      student: AdminUserRow;
+      startedAt: string;
+      endedAt: string | null;
+      active: boolean;
+    }[];
+  }>("/admin/assignments/");
+}
+
+export function createAdminAssignment(teacherId: number, studentId: number) {
+  return apiFetch("/admin/assignments/", {
+    method: "POST",
+    body: JSON.stringify({ teacherId, studentId }),
+  });
+}
+
+export function endAdminAssignment(assignmentId: number) {
+  return apiFetch(`/admin/assignments/${assignmentId}/end/`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+}
+
+export function publishContentApi(
+  contentType: string,
+  contentId: string,
+  action: "publish" | "unpublish" | "archive",
+) {
+  return apiFetch("/content/publish/", {
+    method: "POST",
+    body: JSON.stringify({ contentType, contentId, action }),
+  });
 }

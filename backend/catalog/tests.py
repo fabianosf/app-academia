@@ -20,7 +20,7 @@ class CatalogPermissionTests(TestCase):
             username="editor",
             email="editor@example.com",
             password="SenhaSegura1!",
-            is_staff=True,
+            role="admin",
         )
         self.exercise = Exercise.objects.create(
             public_id="ex-test-1",

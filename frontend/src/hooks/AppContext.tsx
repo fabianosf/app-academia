@@ -56,7 +56,11 @@ interface AppState {
   authenticated: boolean;
   ready: boolean;
   bootError: string | null;
-  signIn: (identifier: string, password: string) => Promise<void>;
+  signIn: (
+    identifier: string,
+    password: string,
+    portal?: "student" | "management",
+  ) => Promise<User>;
   signOut: () => void;
   user: User;
   profile: UserProfile;
@@ -122,7 +126,10 @@ function mapUser(me: ApiUser): User {
     avatarInitials: me.avatarInitials,
     streakDays: me.streakDays,
     plan: me.plan,
-    isStaff: Boolean((me as ApiUser & { isStaff?: boolean }).isStaff),
+    isStaff: Boolean(me.isStaff),
+    role: me.role ?? "student",
+    isPlatformAdmin: Boolean(me.isPlatformAdmin),
+    isTeacher: Boolean(me.isTeacher),
   };
 }
 
@@ -261,15 +268,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [applyMe, loadAppData]);
 
   const signIn = useCallback(
-    async (identifier: string, password: string) => {
+    async (
+      identifier: string,
+      password: string,
+      portal?: "student" | "management",
+    ) => {
       setBootError(null);
-      await login(identifier, password);
+      await login(identifier, password, portal);
       const me = await fetchMe();
       applyMe(me);
       setAuthenticated(true);
       setReady(false);
       await loadAppData();
       setReady(true);
+      return mapUser(me);
     },
     [applyMe, loadAppData],
   );

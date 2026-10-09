@@ -6,6 +6,7 @@ from .views_assist import (
     AssistFeedbackCreateView,
     DemoGenerateView,
     DemoJobDetailView,
+    DemoLocalMediaView,
     DemoReviewView,
     ExerciseAssistClarifyView,
     ExerciseAssistCreateView,
@@ -40,6 +41,11 @@ urlpatterns = [
         "demos/<str:public_id>/review/",
         DemoReviewView.as_view(),
         name="demos-review",
+    ),
+    path(
+        "demo-media/<str:filename>",
+        DemoLocalMediaView.as_view(),
+        name="demo-local-media",
     ),
     path("feedback/", AssistFeedbackCreateView.as_view(), name="assist-feedback"),
 ]

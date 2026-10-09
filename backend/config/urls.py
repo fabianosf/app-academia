@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from catalog.views import ExerciseViewSet, WorkoutViewSet
+from catalog.views import ContentAssignView, ContentPublishView, ExerciseViewSet, WorkoutViewSet
 
 router = DefaultRouter()
 router.register(r"exercises", ExerciseViewSet, basename="exercise")
@@ -12,6 +12,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("accounts.urls")),
     path("api/", include(router.urls)),
+    path("api/content/publish/", ContentPublishView.as_view(), name="content-publish"),
+    path("api/content/assign/", ContentAssignView.as_view(), name="content-assign"),
     path("api/training/", include("training.urls")),
     path("api/live/", include("live.urls")),
     path("api/assistant/", include("assistant.urls")),

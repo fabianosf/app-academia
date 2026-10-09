@@ -84,9 +84,9 @@ npm run dev
 
 Abra http://localhost:5173. O Vite faz proxy de `/api` para `http://127.0.0.1:8000`.
 
-No boot, se não houver sessão JWT, o app abre `/login`. Conta demo: `fabiano` / `forma123`.
+No boot, se não houver sessão JWT, o app abre `/login` (aluno). Conta demo aluno: `fabiano` / `forma123`. Gestão: `/admin/login` (professores e administradores; o papel vem do backend — use `promote_admin`).
 
-Rotas de autenticação: `/login`, `/esqueci-senha`, `/redefinir-senha`.
+Rotas de autenticação: `/login`, `/admin/login`, `/esqueci-senha`, `/redefinir-senha`. Ver `docs/PAPEIS_E_ADMIN.md`.
 
 ## CI
 

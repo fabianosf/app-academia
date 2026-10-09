@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from catalog.models import PublishStatus
+
 
 class Instructor(models.Model):
     public_id = models.CharField(max_length=32, unique=True, db_index=True)
@@ -38,6 +40,19 @@ class LiveClass(models.Model):
     tone = models.CharField(max_length=128, blank=True, default="")
     # URL de embed/HLS/página do fornecedor (LiveKit/Daily/YouTube Live/etc.)
     stream_url = models.URLField(max_length=1024, blank=True, default="")
+    publish_status = models.CharField(
+        max_length=20,
+        choices=PublishStatus.choices,
+        default=PublishStatus.PUBLISHED,
+        db_index=True,
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="created_live_classes",
+    )
 
     class Meta:
         ordering = ["status", "time_label"]

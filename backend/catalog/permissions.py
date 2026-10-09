@@ -1,8 +1,12 @@
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
-class IsAuthenticatedReadOnlyOrStaffWrite(BasePermission):
-    """GET/HEAD/OPTIONS: autenticado. Mutações: apenas staff/admin."""
+class IsAuthenticatedReadOrTeacherDraftOrAdminWrite(BasePermission):
+    """
+    GET: autenticado.
+    POST/PATCH (conteúdo): teacher ou admin (rascunhos).
+    Publicar/arquivar: só admin (validado nas views).
+    """
 
     def has_permission(self, request, view):
         user = request.user
@@ -10,4 +14,9 @@ class IsAuthenticatedReadOnlyOrStaffWrite(BasePermission):
             return False
         if request.method in SAFE_METHODS:
             return True
-        return bool(user.is_staff)
+        role = getattr(user, "role", None)
+        return role in ("teacher", "admin") or user.is_superuser
+
+
+# Compatibilidade com imports antigos
+IsAuthenticatedReadOnlyOrStaffWrite = IsAuthenticatedReadOrTeacherDraftOrAdminWrite

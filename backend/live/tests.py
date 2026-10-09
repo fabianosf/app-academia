@@ -17,7 +17,7 @@ class LiveStreamUrlTests(TestCase):
             username="staff@test.com",
             email="staff@test.com",
             password="pass12345",
-            is_staff=True,
+            role="admin",
         )
         self.instructor = Instructor.objects.create(
             public_id="i1", name="Fabiano", specialty="Força"

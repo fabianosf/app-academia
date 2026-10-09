@@ -4,10 +4,11 @@ import { ArrowLeft, Mail } from "lucide-react";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { Button, Input } from "@/components/ui/primitives";
 import { useApp } from "@/hooks/AppContext";
+import { homePathForUser } from "@/lib/roles";
 import { requestPasswordReset } from "@/services/api";
 
 export function ForgotPasswordPage() {
-  const { authenticated, authChecking } = useApp();
+  const { authenticated, authChecking, user } = useApp();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -22,7 +23,7 @@ export function ForgotPasswordPage() {
     );
   }
 
-  if (authenticated) return <Navigate to="/" replace />;
+  if (authenticated) return <Navigate to={homePathForUser(user)} replace />;
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();

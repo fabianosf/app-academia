@@ -209,7 +209,16 @@ WEB_SEARCH_PROVIDER = os.getenv("WEB_SEARCH_PROVIDER", "")
 WEB_SEARCH_API_KEY = os.getenv("WEB_SEARCH_API_KEY", "")
 WEB_SEARCH_BASE_URL = os.getenv("WEB_SEARCH_BASE_URL", "")
 
-# Geração de vídeo avatar (adapter HTTP genérico). Vazio = not_configured.
+# Geração de vídeo avatar. Vazio = not_configured.
+# local (grátis) | heygen | http | (vazio)
 VIDEO_DEMO_PROVIDER = os.getenv("VIDEO_DEMO_PROVIDER", "")
 VIDEO_DEMO_API_KEY = os.getenv("VIDEO_DEMO_API_KEY", "")
 VIDEO_DEMO_BASE_URL = os.getenv("VIDEO_DEMO_BASE_URL", "")
+VIDEO_DEMO_LOCAL_DIR = os.getenv("VIDEO_DEMO_LOCAL_DIR", "media/demo_samples")
+# HeyGen: IDs do dashboard / GET /v3/avatars e /v3/voices
+VIDEO_DEMO_AVATAR_NEUTRAL = os.getenv("VIDEO_DEMO_AVATAR_NEUTRAL", "")
+VIDEO_DEMO_AVATAR_WOMAN = os.getenv("VIDEO_DEMO_AVATAR_WOMAN", "")
+VIDEO_DEMO_AVATAR_MAN = os.getenv("VIDEO_DEMO_AVATAR_MAN", "")
+VIDEO_DEMO_VOICE_NEUTRAL = os.getenv("VIDEO_DEMO_VOICE_NEUTRAL", "")
+VIDEO_DEMO_VOICE_WOMAN = os.getenv("VIDEO_DEMO_VOICE_WOMAN", "")
+VIDEO_DEMO_VOICE_MAN = os.getenv("VIDEO_DEMO_VOICE_MAN", "")

@@ -1,7 +1,12 @@
+from django.db.models import Q
 from rest_framework import status
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from accounts.permissions import IsPlatformAdmin, IsTeacherOrAdmin
+from accounts.services_org import content_visible_to_student_q
+from catalog.models import PublishStatus
 
 from .models import ClassReservation, Instructor, LiveClass
 from .serializers import (
@@ -21,11 +26,24 @@ class InstructorListView(APIView):
 class LiveClassListView(APIView):
     def get_permissions(self):
         if self.request.method == "POST":
-            return [IsAuthenticated(), IsAdminUser()]
+            return [IsAuthenticated(), IsTeacherOrAdmin()]
         return [IsAuthenticated()]
 
     def get(self, request):
-        qs = LiveClass.objects.select_related("instructor").all()
+        user = request.user
+        role = getattr(user, "role", "student")
+        qs = LiveClass.objects.select_related("instructor")
+        if role == "admin" or user.is_superuser:
+            qs = qs.all()
+        elif role == "teacher":
+            qs = qs.filter(
+                Q(publish_status=PublishStatus.PUBLISHED)
+                | Q(created_by=user, publish_status=PublishStatus.DRAFT)
+            )
+        else:
+            qs = qs.filter(
+                content_visible_to_student_q(user, content_type="live_class")
+            )
         status_filter = request.query_params.get("status")
         if status_filter:
             qs = qs.filter(status=status_filter)
@@ -34,7 +52,15 @@ class LiveClassListView(APIView):
     def post(self, request):
         serializer = LiveClassWriteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        publish = PublishStatus.DRAFT
+        if getattr(request.user, "role", None) == "admin" or request.user.is_superuser:
+            raw = request.data.get("publishStatus") or PublishStatus.DRAFT
+            if raw in PublishStatus.values:
+                publish = raw
         obj = serializer.save()
+        obj.created_by = request.user
+        obj.publish_status = publish
+        obj.save(update_fields=["created_by", "publish_status"])
         return Response(
             LiveClassSerializer(obj).data, status=status.HTTP_201_CREATED
         )
@@ -47,6 +73,15 @@ class LiveClassDetailView(APIView):
         ).first()
         if not obj:
             return Response({"detail": "Não encontrado."}, status=404)
+        user = request.user
+        role = getattr(user, "role", "student")
+        if role == "student":
+            allowed = LiveClass.objects.filter(
+                content_visible_to_student_q(user, content_type="live_class"),
+                pk=obj.pk,
+            ).exists()
+            if not allowed:
+                return Response({"detail": "Não encontrado."}, status=404)
         return Response(LiveClassSerializer(obj).data)
 
 

@@ -7,6 +7,8 @@ export type Goal =
   | "Mobilidade"
   | "Saúde e bem-estar";
 
+export type UserRole = "student" | "teacher" | "admin";
+
 export interface User {
   id: string;
   name: string;
@@ -15,6 +17,9 @@ export interface User {
   streakDays: number;
   plan: "Essencial" | "Completo";
   isStaff?: boolean;
+  role?: UserRole;
+  isPlatformAdmin?: boolean;
+  isTeacher?: boolean;
 }
 
 export interface UserProfile {
@@ -55,6 +60,7 @@ export interface Workout {
   safety: string[];
   exerciseIds: string[];
   tone: string;
+  publishStatus?: "draft" | "published" | "archived";
 }
 
 export interface WorkoutSession {

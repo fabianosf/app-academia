@@ -107,11 +107,7 @@ export function NinaPage() {
         setAssist((prev) => {
           if (!prev) return prev;
           const jobs = prev.jobs.map((j) => (j.id === updated.id ? updated : j));
-          const matchedDemo =
-            updated.demo?.status === "approved"
-              ? updated.demo
-              : prev.matchedDemo;
-          return { ...prev, jobs, matchedDemo };
+          return { ...prev, jobs };
         });
       } catch {
         // erros transitórios de poll não bloqueiam a UI
@@ -290,7 +286,18 @@ export function NinaPage() {
   const approvedDemo =
     assist?.matchedDemo?.status === "approved" ? assist.matchedDemo : null;
   const reviewDemo =
-    latestJob?.demo?.status === "review" ? latestJob.demo : null;
+    latestJob?.demo?.status === "review" || latestJob?.demo?.status === "draft"
+      ? latestJob.demo
+      : null;
+  // Pré-visualização do próprio pedido (mesmo em review) — catálogo partilhado continua approved-only.
+  const previewDemo =
+    latestJob?.demo?.media_url &&
+    (latestJob.status === "done" ||
+      latestJob.demo.status === "review" ||
+      latestJob.demo.status === "draft")
+      ? latestJob.demo
+      : null;
+  const displayDemo = approvedDemo?.media_url ? approvedDemo : previewDemo;
 
   return (
     <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
@@ -476,19 +483,33 @@ export function NinaPage() {
                       </ul>
                     </div>
                   )}
-                  {approvedDemo?.media_url ? (
+                  {displayDemo?.media_url ? (
                     <div className="space-y-2">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
-                        Demonstração aprovada
-                        {approvedDemo.ai_generated ? " · gerada por IA" : ""}
+                      <p
+                        className={`text-xs font-semibold uppercase tracking-wide ${
+                          approvedDemo?.media_url
+                            ? "text-emerald-800"
+                            : "text-amber-900"
+                        }`}
+                      >
+                        {approvedDemo?.media_url
+                          ? `Demonstração aprovada${approvedDemo.ai_generated ? " · gerada por IA" : ""}`
+                          : "Pré-visualização · geração local / em revisão"}
                       </p>
                       <video
                         className="max-h-64 w-full rounded-xl bg-black"
                         controls
-                        src={approvedDemo.media_url}
+                        playsInline
+                        src={displayDemo.media_url}
                       >
                         O teu browser não reproduz vídeo. Segue os passos escritos.
                       </video>
+                      {!approvedDemo?.media_url && (
+                        <p className="text-xs text-stone-500">
+                          Vídeo do teu pedido (ainda não entra no catálogo partilhado). Staff
+                          pode aprovar em Administração.
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <div className="rounded-xl border border-dashed border-stone-300 px-3 py-2 text-xs text-stone-600">
@@ -502,15 +523,15 @@ export function NinaPage() {
                       {(latestJob?.status === "pending" ||
                         latestJob?.status === "processing") && (
                         <p>
-                          Pedido de demonstração em processamento (a atualizar
-                          automaticamente). Quando existir vídeo novo, fica em revisão
-                          humana antes de aparecer aqui.
+                          A gerar demonstração (~7s)… a página atualiza sozinha. Em modo
+                          local o vídeo aparece aqui assim que estiver pronto.
                         </p>
                       )}
-                      {(latestJob?.status === "done" || reviewDemo) && (
+                      {(latestJob?.status === "done" || reviewDemo) &&
+                        !displayDemo?.media_url && (
                         <p>
-                          Há um vídeo em revisão — ainda não é apresentado como demonstração
-                          aprovada (pode conter erros biomecânicos). Aprova em Administração.
+                          Há um vídeo em revisão sem URL de média ainda. Aprova em
+                          Administração quando estiver disponível.
                         </p>
                       )}
                       {latestJob?.status === "failed" && (

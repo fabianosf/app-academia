@@ -294,3 +294,58 @@ class ExerciseAssistApiTests(TestCase):
         )
         out = refresh_generation_job(job)
         self.assertEqual(out.status, DemoGenerationJob.Status.NOT_CONFIGURED)
+
+    @override_settings(VIDEO_DEMO_PROVIDER="local")
+    @patch("assistant.services.orchestrate.interpret_request", side_effect=_fake_interpret)
+    def test_local_provider_job_can_complete_with_media(self, _mock_interp):
+        res = self.client.post(
+            "/api/assistant/exercise-assist/",
+            {
+                "message": "Como faço aquele de levantar os braços para os lados?",
+                "persona": "neutral",
+                "requestVideo": True,
+            },
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        jobs = res.data.get("jobs") or []
+        self.assertTrue(jobs)
+        self.assertIn(jobs[0]["status"], ("pending", "processing"))
+        job_id = jobs[0]["id"]
+        polled = self.client.get(f"/api/assistant/demos/jobs/{job_id}/")
+        self.assertEqual(polled.status_code, status.HTTP_200_OK)
+        self.assertEqual(polled.data["status"], "done")
+        self.assertTrue(polled.data["demo"]["media_url"])
+        self.assertIn("/api/assistant/demo-media/", polled.data["demo"]["media_url"])
+
+    @override_settings(
+        VIDEO_DEMO_PROVIDER="heygen",
+        VIDEO_DEMO_API_KEY="hk_test",
+        VIDEO_DEMO_AVATAR_NEUTRAL="av_n",
+    )
+    @patch("assistant.services.orchestrate.interpret_request", side_effect=_fake_interpret)
+    @patch("assistant.services.orchestrate.get_video_demo_provider")
+    def test_heygen_start_persists_provider_job_id(self, mock_get, _mock_interp):
+        provider = mock_get.return_value
+        provider.start_generation.return_value = VideoJobResult(
+            status="processing",
+            provider_job_id="v_hey_1",
+        )
+        res = self.client.post(
+            "/api/assistant/exercise-assist/",
+            {
+                "message": "Como faço aquele de levantar os braços para os lados?",
+                "persona": "neutral",
+                "requestVideo": True,
+            },
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        jobs = res.data.get("jobs") or []
+        self.assertTrue(jobs)
+        self.assertEqual(jobs[0]["status"], "processing")
+        self.assertEqual(jobs[0].get("provider_job_id"), "v_hey_1")
+        provider.start_generation.assert_called_once()
+        kwargs = provider.start_generation.call_args.kwargs
+        self.assertEqual(kwargs["duration_sec"], 7)
+        self.assertTrue(kwargs["exercise_name"])

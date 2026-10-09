@@ -14,6 +14,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from .authentication import SoftCookieJWTAuthentication
 from .cookies import clear_jwt_cookies, set_jwt_cookies
 from .models import UserProfile
 from .serializers import (
@@ -43,19 +44,66 @@ class FormaTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class FormaTokenObtainPairView(TokenObtainPairView):
+    """
+    Login com cookies HttpOnly.
+
+    Campo opcional `portal`:
+    - `student` — só contas role=student
+    - `management` — só teacher/admin (área de gestão)
+
+    O portal nunca atribui permissões; só rejeita a sessão se o papel
+    real da conta não corresponder à porta de entrada.
+    """
+
     serializer_class = FormaTokenObtainPairSerializer
     throttle_classes = [AuthThrottle]
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        if response.status_code == 200 and isinstance(response.data, dict):
-            access = response.data.get("access")
-            refresh = response.data.get("refresh")
-            if access and refresh:
-                set_jwt_cookies(response, access, refresh)
-                # Não devolve tokens no body (evita XSS via JS).
-                response.data = {"detail": "ok"}
+        portal = (request.data.get("portal") or "").strip().lower()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.user
+        role = getattr(user, "role", User.Role.STUDENT)
+        is_management = (
+            role in (User.Role.TEACHER, User.Role.ADMIN) or user.is_superuser
+        )
+
+        if portal == "student" and is_management:
+            return Response(
+                {
+                    "detail": (
+                        "Esta conta pertence à área de gestão. "
+                        "Use o acesso de administração."
+                    ),
+                    "code": "portal_management_required",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if portal == "management" and not is_management:
+            return Response(
+                {
+                    "detail": (
+                        "Esta conta é de aluno. Use o acesso do aluno em /login."
+                    ),
+                    "code": "portal_student_required",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        access = serializer.validated_data.get("access")
+        refresh = serializer.validated_data.get("refresh")
+        if role == User.Role.ADMIN or user.is_superuser:
+            home = "/admin"
+        elif role == User.Role.TEACHER:
+            home = "/professor"
+        else:
+            home = "/"
+        # Não devolve tokens no body (evita XSS via JS).
+        response = Response({"detail": "ok", "role": role, "home": home})
+        if access and refresh:
+            set_jwt_cookies(response, access, refresh)
         return response
 
 
@@ -89,6 +137,24 @@ class LogoutView(APIView):
         response = Response({"detail": "ok"})
         clear_jwt_cookies(response)
         return response
+
+
+class SessionView(APIView):
+    """Estado da sessão sem 401 quando não há cookie (evita ruído no boot do frontend)."""
+
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = [SoftCookieJWTAuthentication]
+
+    def get(self, request):
+        if request.user and request.user.is_authenticated:
+            UserProfile.objects.get_or_create(user=request.user)
+            return Response(
+                {
+                    "authenticated": True,
+                    "user": UserSerializer(request.user).data,
+                }
+            )
+        return Response({"authenticated": False})
 
 
 class RegisterView(generics.CreateAPIView):

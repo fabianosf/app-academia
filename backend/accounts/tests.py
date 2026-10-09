@@ -87,3 +87,20 @@ class CookieAuthTests(TestCase):
         if access is not None:
             self.assertIn(access.value, ("", '""'))
 
+    def test_session_endpoint_is_200_without_cookie(self):
+        res = self.client.get("/api/auth/session/")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertFalse(res.data["authenticated"])
+
+    def test_session_endpoint_returns_user_when_logged_in(self):
+        login = self.client.post(
+            "/api/auth/token/",
+            {"username": "cookieuser", "password": "SenhaSegura1!"},
+            format="json",
+        )
+        self.client.cookies = login.cookies
+        res = self.client.get("/api/auth/session/")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertTrue(res.data["authenticated"])
+        self.assertEqual(res.data["user"]["username"], "cookieuser")
+

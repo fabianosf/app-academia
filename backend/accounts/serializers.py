@@ -95,6 +95,11 @@ class UserSerializer(serializers.ModelSerializer):
         data["streakDays"] = data.pop("streak_days")
         data["subscriptionStatus"] = data.pop("subscription_status")
         data["isStaff"] = bool(instance.is_staff)
+        data["role"] = getattr(instance, "role", "student")
+        data["isPlatformAdmin"] = bool(
+            getattr(instance, "role", None) == "admin" or instance.is_superuser
+        )
+        data["isTeacher"] = bool(getattr(instance, "role", None) == "teacher")
         return data
 
 
@@ -139,6 +144,9 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         password = validated_data.pop("password")
         user = User(**validated_data)
+        user.role = User.Role.STUDENT
+        user.is_staff = False
+        user.is_superuser = False
         user.set_password(password)
         user.save()
         UserProfile.objects.get_or_create(user=user)

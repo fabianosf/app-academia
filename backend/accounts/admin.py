@@ -11,8 +11,8 @@ class UserProfileInline(admin.StackedInline):
 
 @admin.register(User)
 class UserAdmin(DjangoUserAdmin):
-    list_display = ("username", "email", "name", "plan", "streak_days", "is_staff")
-    list_filter = ("plan", "subscription_status", "is_staff")
+    list_display = ("username", "email", "name", "role", "plan", "streak_days", "is_staff")
+    list_filter = ("role", "plan", "subscription_status", "is_staff")
     search_fields = ("username", "email", "name")
     inlines = [UserProfileInline]
     fieldsets = DjangoUserAdmin.fieldsets + (
@@ -22,6 +22,7 @@ class UserAdmin(DjangoUserAdmin):
                 "fields": (
                     "name",
                     "avatar_initials",
+                    "role",
                     "streak_days",
                     "plan",
                     "subscription_status",

@@ -39,10 +39,16 @@ class LiveClassSerializer(serializers.ModelSerializer):
             "tone",
             "streamUrl",
             "streamConfigured",
+            "publish_status",
         ]
 
     def get_streamConfigured(self, obj):
         return bool((obj.stream_url or "").strip())
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["publishStatus"] = data.pop("publish_status", instance.publish_status)
+        return data
 
 
 class LiveClassWriteSerializer(serializers.Serializer):

@@ -189,12 +189,18 @@ def _match_or_enqueue(
     )
     job.demo = draft
     provider = get_video_demo_provider()
-    result = provider.start_generation(
-        script_steps=list(interp.get("steps") or [])[:12],
-        exercise_name=name,
-        persona=job.persona,
-        duration_sec=7,
-    )
+    try:
+        result = provider.start_generation(
+            script_steps=list(interp.get("steps") or [])[:12],
+            exercise_name=name,
+            persona=job.persona,
+            duration_sec=7,
+        )
+    except Exception:
+        job.status = DemoGenerationJob.Status.FAILED
+        job.safe_error = "Falha inesperada ao iniciar geração de vídeo."
+        job.save(update_fields=["status", "safe_error", "demo", "updated_at"])
+        return job
     if result.provider_job_id:
         job.provider_job_id = result.provider_job_id
     if result.status == "not_configured":
@@ -231,7 +237,13 @@ def refresh_generation_job(job: DemoGenerationJob) -> DemoGenerationJob:
         return job
 
     provider = get_video_demo_provider()
-    result = provider.poll(job.provider_job_id)
+    try:
+        result = provider.poll(job.provider_job_id)
+    except Exception:
+        job.status = DemoGenerationJob.Status.FAILED
+        job.safe_error = "Falha inesperada ao consultar o estado do vídeo."
+        job.save(update_fields=["status", "safe_error", "updated_at"])
+        return job
     if result.status == "failed":
         job.status = DemoGenerationJob.Status.FAILED
         job.safe_error = result.safe_error or "Falha na geração."

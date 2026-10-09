@@ -33,8 +33,10 @@ export function AdminPage() {
   const [reviewQueue, setReviewQueue] = useState<ExerciseDemoDto[]>([]);
   const [reviewLoading, setReviewLoading] = useState(false);
 
+  const isAdmin = user.role === "admin" || !!user.isPlatformAdmin;
+
   const loadReviewQueue = useCallback(async () => {
-    if (!user.isStaff) {
+    if (!isAdmin) {
       setReviewQueue([]);
       return;
     }
@@ -47,7 +49,7 @@ export function AdminPage() {
     } finally {
       setReviewLoading(false);
     }
-  }, [user.isStaff]);
+  }, [isAdmin]);
 
   useEffect(() => {
     void refreshTraining();
@@ -123,8 +125,10 @@ export function AdminPage() {
       />
       <p className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-600">
         Sessão: {user.name}
-        {user.isStaff ? " · staff" : " · sem staff"} · criações e aprovação de demos exigem{" "}
-        <strong>is_staff</strong>.
+        {user.role === "admin" || user.isPlatformAdmin
+          ? " · administrador"
+          : " · sem papel admin"}{" "}
+        · gestão global e publicação exigem <strong>role=admin</strong>.
       </p>
 
       <section className="rounded-2xl border border-stone-200 bg-white p-4">
@@ -134,21 +138,21 @@ export function AdminPage() {
             Atualizar
           </Button>
         </div>
-        {!user.isStaff && (
+        {!isAdmin && (
           <p className="mt-2 text-sm text-stone-500">
-            A tua conta não é staff — a fila de aprovação não está disponível.
+            A tua conta não é administradora — a fila de aprovação não está disponível.
           </p>
         )}
-        {user.isStaff && reviewLoading && (
+        {isAdmin && reviewLoading && (
           <p className="mt-2 text-sm text-stone-500">A carregar fila…</p>
         )}
-        {user.isStaff && !reviewLoading && reviewQueue.length === 0 && (
+        {isAdmin && !reviewLoading && reviewQueue.length === 0 && (
           <p className="mt-2 text-sm text-stone-500">
             Nenhuma demo em revisão. Quando a geração de vídeo estiver configurada, os vídeos
             novos aparecem aqui até aprovares.
           </p>
         )}
-        {user.isStaff && (
+        {isAdmin && (
           <ul className="mt-3 space-y-3">
             {reviewQueue.map((demo) => (
               <li
@@ -162,7 +166,8 @@ export function AdminPage() {
                       {demo.variation ? ` · ${demo.variation}` : ""}
                     </p>
                     <p className="text-xs text-stone-500">
-                      {demo.duration_sec}s · {demo.persona} ·{" "}
+                      {demo.duration_sec}s ·{" "}
+                      {(demo as { persona?: string }).persona || "—"} ·{" "}
                       {demo.ai_generated ? "IA" : "manual"} · {demo.id}
                     </p>
                     {demo.structured_script?.length > 0 && (

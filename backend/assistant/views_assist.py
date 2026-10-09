@@ -199,3 +199,26 @@ class DemoReviewView(APIView):
             )
         demo = review_demo(demo, approve=(action == "approve"), reviewer=request.user)
         return Response(ExerciseDemoSerializer(demo).data)
+
+
+class DemoLocalMediaView(APIView):
+    """Serve MP4 gerado pelo provider local (via /api → proxy HTTPS do Vite)."""
+
+    def get(self, request, filename: str):
+        from pathlib import Path
+
+        from django.conf import settings
+        from django.http import FileResponse
+
+        name = (filename or "").strip()
+        if not name.endswith(".mp4") or "/" in name or "\\" in name or ".." in name:
+            return Response({"detail": "Ficheiro inválido."}, status=404)
+        if name.startswith("local_"):
+            path = Path(settings.BASE_DIR) / "media" / "demo_jobs" / name
+        elif name == "sample.mp4":
+            path = Path(settings.BASE_DIR) / "media" / "demo_samples" / "sample.mp4"
+        else:
+            return Response({"detail": "Ficheiro inválido."}, status=404)
+        if not path.is_file():
+            return Response({"detail": "Não encontrado."}, status=404)
+        return FileResponse(path.open("rb"), content_type="video/mp4", filename=name)

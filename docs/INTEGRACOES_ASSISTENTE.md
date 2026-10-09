@@ -53,7 +53,34 @@ Podes pôr um **gateway próprio** (Cloud Function / FastAPI) que traduz Tavily,
 
 Prioriza fontes de saúde pública, universidades e associações profissionais no teu gateway.
 
-## 3. Vídeo com pessoa virtual (≥ 7 s)
+## 3. Vídeo com pessoa virtual (~7 s)
+
+### Opção A — local (grátis, para testar o fluxo)
+
+```bash
+VIDEO_DEMO_PROVIDER=local
+```
+
+Sem API key. O backend gera um MP4 ~7s com o **nome do exercício e passos em texto** (placeholder educativo — **não** é biomecânica real).  
+A Nina mostra esse vídeo como **pré-visualização** no teu pedido; para entrar no catálogo partilhado continua a ser preciso aprovação staff.
+
+Requisitos Python: `pillow`, `imageio`, `imageio-ffmpeg` (no `requirements.txt`).
+
+### Opção B — HeyGen nativo
+
+1. Cria conta em [HeyGen](https://www.heygen.com/) e gera uma API key.
+2. Lista avatares (`GET https://api.heygen.com/v3/avatars`) e vozes (`GET https://api.heygen.com/v3/voices`) com header `X-Api-Key`.
+3. No `backend/.env`:
+
+```bash
+VIDEO_DEMO_PROVIDER=heygen
+VIDEO_DEMO_API_KEY=sua_chave_heygen
+VIDEO_DEMO_AVATAR_NEUTRAL=avatar_id_aqui
+```
+
+O backend chama `POST /v3/videos` e faz poll em `GET /v3/videos/{id}`. Custo: cobrado pela HeyGen.
+
+### Opção C — gateway HTTP genérico
 
 ```bash
 VIDEO_DEMO_PROVIDER=http
@@ -61,34 +88,13 @@ VIDEO_DEMO_API_KEY=sua_chave
 VIDEO_DEMO_BASE_URL=https://teu-gateway.example.com
 ```
 
-### Contrato HTTP esperado
-
-`POST {VIDEO_DEMO_BASE_URL}/generate`
-
-```json
-{
-  "exercise_name": "Elevação lateral",
-  "persona": "neutral|woman|man",
-  "duration_sec": 7,
-  "steps": ["passo 1", "passo 2"]
-}
-```
-
-Resposta:
-
-```json
-{ "job_id": "abc", "status": "pending|processing|done|failed", "media_url": "", "error": "" }
-```
-
-`GET {VIDEO_DEMO_BASE_URL}/jobs/{job_id}` → mesmo formato, com `media_url` quando `done`.
-
-O gateway pode encapsular HeyGen, Tavus, ou outro — **escolhe e configura no gateway**, não no frontend.
+`POST {BASE}/generate` → `{ "job_id", "status", "media_url?", "error?" }`  
+`GET {BASE}/jobs/{id}` → mesmo formato quando `done`.
 
 ### Revisão humana
 
-Vídeos novos ficam com `status=review` até um staff aprovar em **Administração** (ou `POST /api/assistant/demos/{id}/review/` com `{"action":"approve"}`).
-
-Só demos `approved` são mostradas na Nina como demonstração.
+Vídeos novos ficam com `status=review` até staff aprovar em **Administração**.  
+Na Nina, o **pedido atual** pode pré-visualizar o `media_url` em revisão; só demos `approved` entram no catálogo partilhado (`matchedDemo`).
 
 ## 4. Live (stream por aula)
 
@@ -111,7 +117,7 @@ Sem métricas do cliente, a API devolve score 0 e cues a pedir ativação da câ
 1. Copiar `backend/.env.example` → `.env`
 2. Preencher LLM
 3. (Opcional) Levantar gateway de pesquisa → preencher `WEB_SEARCH_*`
-4. (Opcional) Levantar gateway de vídeo → preencher `VIDEO_DEMO_*`
+4. (Opcional) Vídeo: `VIDEO_DEMO_PROVIDER=local` (grátis) ou `heygen` / `http`
 5. (Opcional) Definir `streamUrl` nas aulas ao vivo
 6. Reiniciar Django
 7. Staff: abrir `/admin` na app → fila **Demos em revisão**

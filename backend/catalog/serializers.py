@@ -22,7 +22,13 @@ class ExerciseSerializer(serializers.ModelSerializer):
             "tip",
             "focus",
             "place",
+            "publish_status",
         ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["publishStatus"] = data.pop("publish_status", instance.publish_status)
+        return data
 
     def create(self, validated_data):
         import uuid
@@ -54,7 +60,13 @@ class WorkoutSerializer(serializers.ModelSerializer):
             "tone",
             "exerciseIds",
             "exercises",
+            "publish_status",
         ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["publishStatus"] = data.pop("publish_status", instance.publish_status)
+        return data
 
     def get_exerciseIds(self, obj):
         return list(

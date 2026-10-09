@@ -12,3 +12,6 @@ backend/staticfiles/
 .env
 *.egg-info/
 .pytest_cache/
+
+backend/media/
+

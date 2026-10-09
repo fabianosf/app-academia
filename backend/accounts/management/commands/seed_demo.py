@@ -107,7 +107,8 @@ class Command(BaseCommand):
             LiveClass.objects.all().delete()
             Instructor.objects.all().delete()
 
-        # Conta demo: staff (editar catálogo local), nunca superuser.
+        # Conta demo: aluno por omissão (sem promoção automática a admin).
+        # Para gestão: python manage.py promote_admin fabiano
         user, created = User.objects.get_or_create(
             username="fabiano",
             defaults={
@@ -118,13 +119,13 @@ class Command(BaseCommand):
                 "plan": User.Plan.COMPLETO,
                 "subscription_status": User.SubscriptionStatus.ATIVO,
                 "onboarded": True,
-                "is_staff": True,
+                "role": User.Role.STUDENT,
+                "is_staff": False,
                 "is_superuser": False,
             },
         )
         if created or not user.has_usable_password():
             user.set_password("forma123")
-            user.is_staff = True
             user.is_superuser = False
             user.save()
         else:
@@ -134,12 +135,12 @@ class Command(BaseCommand):
             user.streak_days = 4
             user.plan = User.Plan.COMPLETO
             user.onboarded = True
-            user.is_staff = True
             user.is_superuser = False
             user.save()
         self.stdout.write(
             self.style.WARNING(
-                "Demo: fabiano / forma123 (apenas DEBUG). Não use em produção."
+                "Demo aluno: fabiano / forma123 (apenas DEBUG). "
+                "Admin: promote_admin fabiano — não use em produção."
             )
         )
 
