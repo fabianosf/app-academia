@@ -66,6 +66,9 @@ A sessão usa cookies **HttpOnly** (`forma_access` / `forma_refresh`). O fronten
 | Treino | `/api/training/favorites/`, `/sessions/`, `/history/`, `/goals/`, `/achievements/`, `/load-logs/`, `/progress/` |
 | Ao vivo | `/api/live/classes/`, `/instructors/`, `/reservations/` |
 | Nina | `GET/POST /api/assistant/nina/chat/` |
+| Assist. exercício | `POST /api/assistant/exercise-assist/`, `…/{id}/clarify/`, `GET …/{id}/` |
+| Demos | `GET /api/assistant/demos/`, `POST …/generate/`, `GET …/jobs/{id}/`, `POST …/{id}/review/` (staff) |
+| Feedback | `POST /api/assistant/feedback/` |
 | Movimento | `POST /api/movement/analyze/` |
 | Notificações | `/api/notifications/` |
 | Branding | `/api/branding/settings/` |
@@ -91,6 +94,10 @@ GitHub Actions (`.github/workflows/ci.yml`) em push/PR para `main`:
 
 - Backend: `pip install`, `manage.py check`, `manage.py test`
 - Frontend: `npm ci`, `npm audit` (aviso), `tsc --noEmit`, `npm run build`
+
+### Assistente de exercícios (texto + voz)
+
+Na Nina, modo **Demonstrar exercício**: linguagem natural, clarificação, passos escritos, match de demos aprovadas e jobs de vídeo. Sem `WEB_SEARCH_*` / `VIDEO_DEMO_*` a API responde de forma honesta (`search_unavailable` / `not_configured`) — não simula pesquisa nem vídeo pronto. Vídeos novos ficam em `review` até aprovação staff. Voz usa Web Speech no browser; áudio bruto não é guardado.
 
 ## Observações
 

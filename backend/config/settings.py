@@ -179,6 +179,7 @@ REST_FRAMEWORK = {
         "auth": "30/min",
         "anon": "120/min",
         "user": "600/min",
+        "assistant": "20/min",
     },
 }
 
@@ -202,3 +203,13 @@ ANS_HASH = (
     "###ΩΨΧ.ANS.ACADEMIA.NUTRICAO.SAUDE.v1.0.ALPHALANG.NATIVE."
     "35BLOCOS.∇∆∞.20260424.ΨΧΩMASTER###"
 )
+
+# Pesquisa web (adapter HTTP genérico). Vazio = search_unavailable.
+WEB_SEARCH_PROVIDER = os.getenv("WEB_SEARCH_PROVIDER", "")
+WEB_SEARCH_API_KEY = os.getenv("WEB_SEARCH_API_KEY", "")
+WEB_SEARCH_BASE_URL = os.getenv("WEB_SEARCH_BASE_URL", "")
+
+# Geração de vídeo avatar (adapter HTTP genérico). Vazio = not_configured.
+VIDEO_DEMO_PROVIDER = os.getenv("VIDEO_DEMO_PROVIDER", "")
+VIDEO_DEMO_API_KEY = os.getenv("VIDEO_DEMO_API_KEY", "")
+VIDEO_DEMO_BASE_URL = os.getenv("VIDEO_DEMO_BASE_URL", "")

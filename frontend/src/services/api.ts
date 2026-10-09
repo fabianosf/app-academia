@@ -315,3 +315,97 @@ export function analyzeMovementApi(payload: {
     body: JSON.stringify(payload),
   });
 }
+
+export type ExerciseDemoDto = {
+  id: string;
+  exercise_name: string;
+  variation: string;
+  equipment: string[];
+  level: string;
+  duration_sec: number;
+  media_url: string;
+  status: string;
+  ai_generated: boolean;
+  structured_script: string[];
+  source_notes: { title?: string; url?: string }[];
+};
+
+export type DemoJobDto = {
+  id: string;
+  status: string;
+  provider: string;
+  persona: string;
+  safe_error: string;
+  demo: ExerciseDemoDto | null;
+};
+
+export type ExerciseAssistDto = {
+  id: string;
+  text: string;
+  status: string;
+  interpretation: Record<string, unknown>;
+  clarifying_question: string;
+  answer_text: string;
+  steps: string[];
+  cautions: string[];
+  personalized_from_profile: boolean;
+  health_caution: boolean;
+  search_status: string;
+  sources: {
+    title: string;
+    url: string;
+    authorship: string;
+    summary: string;
+    consulted_at: string;
+  }[];
+  matchedDemo: ExerciseDemoDto | null;
+  catalogExerciseId: string | null;
+  jobs: DemoJobDto[];
+};
+
+export function createExerciseAssist(payload: {
+  message: string;
+  persona?: string;
+  requestVideo?: boolean;
+}) {
+  return apiFetch<ExerciseAssistDto>("/assistant/exercise-assist/", {
+    method: "POST",
+    body: JSON.stringify({
+      message: payload.message,
+      persona: payload.persona ?? "neutral",
+      requestVideo: payload.requestVideo ?? true,
+    }),
+  });
+}
+
+export function clarifyExerciseAssist(
+  id: string,
+  payload: { answer: string; persona?: string; requestVideo?: boolean },
+) {
+  return apiFetch<ExerciseAssistDto>(`/assistant/exercise-assist/${id}/clarify/`, {
+    method: "POST",
+    body: JSON.stringify({
+      answer: payload.answer,
+      persona: payload.persona ?? "neutral",
+      requestVideo: payload.requestVideo ?? true,
+    }),
+  });
+}
+
+export function fetchExerciseAssist(id: string) {
+  return apiFetch<ExerciseAssistDto>(`/assistant/exercise-assist/${id}/`);
+}
+
+export function sendAssistFeedback(payload: {
+  assistRequestId: string;
+  demoId?: string;
+  useful?: boolean;
+  equipmentOk?: boolean;
+  preferShorter?: boolean;
+  comment?: string;
+}) {
+  return apiFetch("/assistant/feedback/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
