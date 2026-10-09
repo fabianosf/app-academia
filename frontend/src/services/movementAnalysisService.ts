@@ -5,6 +5,10 @@ export interface MovementFrameInput {
   elapsedSeconds: number;
   sessionId?: number;
   consentAccepted?: boolean;
+  score?: number;
+  reps?: number;
+  cues?: string[];
+  source?: "client_pose" | "mediapipe" | "none";
 }
 
 export interface MovementFrameResult {
@@ -13,17 +17,22 @@ export interface MovementFrameResult {
   cues: string[];
   disclaimer: string;
   sessionId?: number;
+  source?: string;
 }
 
 export async function analyzeFrame(input: MovementFrameInput): Promise<MovementFrameResult> {
   if (!input.consentAccepted) {
-    throw new Error("Consentimento explícito é obrigatório para a análise demonstrativa.");
+    throw new Error("Consentimento explícito é obrigatório para a análise.");
   }
   const data = await analyzeMovementApi({
     exercise: input.exercise,
     elapsedSeconds: input.elapsedSeconds,
     sessionId: input.sessionId,
     consentAccepted: true,
+    score: input.score,
+    reps: input.reps,
+    cues: input.cues,
+    source: input.source ?? "none",
   });
   return {
     score: data.score,
@@ -31,5 +40,6 @@ export async function analyzeFrame(input: MovementFrameInput): Promise<MovementF
     cues: data.cues,
     disclaimer: data.disclaimer,
     sessionId: data.sessionId,
+    source: data.source,
   };
 }

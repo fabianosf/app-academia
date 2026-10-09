@@ -10,8 +10,9 @@ class InstructorAdmin(admin.ModelAdmin):
 
 @admin.register(LiveClass)
 class LiveClassAdmin(admin.ModelAdmin):
-    list_display = ("public_id", "title", "status", "date_label", "time_label")
+    list_display = ("public_id", "title", "status", "date_label", "time_label", "stream_url")
     list_filter = ("status", "level")
+    search_fields = ("title", "public_id", "stream_url")
 
 
 @admin.register(ClassReservation)

@@ -195,6 +195,8 @@ def _match_or_enqueue(
         persona=job.persona,
         duration_sec=7,
     )
+    if result.provider_job_id:
+        job.provider_job_id = result.provider_job_id
     if result.status == "not_configured":
         job.status = DemoGenerationJob.Status.NOT_CONFIGURED
         job.safe_error = result.safe_error or "Geração de vídeo não configurada."
@@ -210,6 +212,43 @@ def _match_or_enqueue(
         job.status = DemoGenerationJob.Status.PROCESSING
         job.safe_error = ""
     job.save()
+    return job
+
+
+def refresh_generation_job(job: DemoGenerationJob) -> DemoGenerationJob:
+    """Atualiza job pending/processing via poll do provider (se configurado)."""
+    if job.status not in (
+        DemoGenerationJob.Status.PENDING,
+        DemoGenerationJob.Status.PROCESSING,
+    ):
+        return job
+    if not is_video_demo_configured():
+        job.status = DemoGenerationJob.Status.NOT_CONFIGURED
+        job.safe_error = job.safe_error or "Geração de vídeo não configurada."
+        job.save(update_fields=["status", "safe_error", "updated_at"])
+        return job
+    if not job.provider_job_id:
+        return job
+
+    provider = get_video_demo_provider()
+    result = provider.poll(job.provider_job_id)
+    if result.status == "failed":
+        job.status = DemoGenerationJob.Status.FAILED
+        job.safe_error = result.safe_error or "Falha na geração."
+        job.save(update_fields=["status", "safe_error", "updated_at"])
+        return job
+    if result.status == "done":
+        job.status = DemoGenerationJob.Status.DONE
+        if job.demo_id and result.media_url:
+            demo = job.demo
+            demo.media_url = result.media_url
+            demo.status = ExerciseDemo.Status.REVIEW
+            demo.save(update_fields=["media_url", "status", "updated_at"])
+        job.safe_error = ""
+        job.save(update_fields=["status", "safe_error", "updated_at"])
+        return job
+    job.status = DemoGenerationJob.Status.PROCESSING
+    job.save(update_fields=["status", "updated_at"])
     return job
 
 

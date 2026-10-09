@@ -90,11 +90,28 @@ Vídeos novos ficam com `status=review` até um staff aprovar em **Administraç�
 
 Só demos `approved` são mostradas na Nina como demonstração.
 
-## 4. Checklist rápido
+## 4. Live (stream por aula)
+
+Campo `stream_url` / `streamUrl` em cada `LiveClass` (Django admin ou `POST /api/live/classes/` staff).
+
+- URL de embed (LiveKit/Daily/YouTube Live/etc.) → iframe na sala
+- URL `.m3u8` / `.mp4` → `<video>`
+- Vazio → mensagem honesta «transmissão não configurada» (chat local continua)
+
+Não há provider global de live nesta versão: configura por aula.
+
+## 5. Visão computacional (movimento)
+
+MediaPipe Pose corre **no browser**. O endpoint `POST /api/movement/analyze/` só aceita métricas (`score`/`reps`/`cues` + `source=client_pose`) com consentimento — **não recebe frames**.
+
+Sem métricas do cliente, a API devolve score 0 e cues a pedir ativação da câmera (não inventa análise).
+
+## 6. Checklist rápido
 
 1. Copiar `backend/.env.example` → `.env`
 2. Preencher LLM
 3. (Opcional) Levantar gateway de pesquisa → preencher `WEB_SEARCH_*`
 4. (Opcional) Levantar gateway de vídeo → preencher `VIDEO_DEMO_*`
-5. Reiniciar Django
-6. Staff: abrir `/admin` na app → fila **Demos em revisão**
+5. (Opcional) Definir `streamUrl` nas aulas ao vivo
+6. Reiniciar Django
+7. Staff: abrir `/admin` na app → fila **Demos em revisão**

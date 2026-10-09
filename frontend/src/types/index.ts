@@ -94,6 +94,8 @@ export interface LiveClass {
   participants: number;
   status: "live" | "upcoming" | "recorded";
   tone: string;
+  streamUrl?: string;
+  streamConfigured?: boolean;
 }
 
 export interface ClassReservation {

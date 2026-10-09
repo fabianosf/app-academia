@@ -23,6 +23,7 @@ from .services.orchestrate import (
     clarify_assist_request,
     create_assist_request,
     enqueue_demo_for_request,
+    refresh_generation_job,
     review_demo,
 )
 
@@ -150,6 +151,7 @@ class DemoJobDetailView(APIView):
         )
         if not job:
             return Response({"detail": "Não encontrado."}, status=404)
+        job = refresh_generation_job(job)
         return Response(DemoGenerationJobSerializer(job).data)
 
 

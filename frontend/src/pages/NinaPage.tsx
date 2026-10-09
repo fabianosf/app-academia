@@ -9,6 +9,7 @@ import { ApiError } from "@/services/http";
 import {
   clarifyExerciseAssist,
   createExerciseAssist,
+  fetchDemoJob,
   sendAssistFeedback,
   type ExerciseAssistDto,
 } from "@/services/api";
@@ -87,6 +88,42 @@ export function NinaPage() {
       stopSpeaking();
     };
   }, []);
+
+  // Poll geração de vídeo enquanto pending/processing (sem inventar estado).
+  const pollingJobId = assist?.jobs?.[0]?.id;
+  const pollingJobStatus = assist?.jobs?.[0]?.status;
+  useEffect(() => {
+    if (
+      !pollingJobId ||
+      (pollingJobStatus !== "pending" && pollingJobStatus !== "processing")
+    ) {
+      return;
+    }
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const updated = await fetchDemoJob(pollingJobId);
+        if (cancelled) return;
+        setAssist((prev) => {
+          if (!prev) return prev;
+          const jobs = prev.jobs.map((j) => (j.id === updated.id ? updated : j));
+          const matchedDemo =
+            updated.demo?.status === "approved"
+              ? updated.demo
+              : prev.matchedDemo;
+          return { ...prev, jobs, matchedDemo };
+        });
+      } catch {
+        // erros transitórios de poll não bloqueiam a UI
+      }
+    };
+    const id = window.setInterval(() => void tick(), 4000);
+    void tick();
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [pollingJobId, pollingJobStatus]);
 
   const speakReply = useCallback(
     (content: string) => {
@@ -465,14 +502,22 @@ export function NinaPage() {
                       {(latestJob?.status === "pending" ||
                         latestJob?.status === "processing") && (
                         <p>
-                          Pedido de demonstração em processamento. Quando existir vídeo novo,
-                          fica em revisão humana antes de aparecer aqui.
+                          Pedido de demonstração em processamento (a atualizar
+                          automaticamente). Quando existir vídeo novo, fica em revisão
+                          humana antes de aparecer aqui.
                         </p>
                       )}
-                      {reviewDemo && (
+                      {(latestJob?.status === "done" || reviewDemo) && (
                         <p>
                           Há um vídeo em revisão — ainda não é apresentado como demonstração
-                          aprovada (pode conter erros biomecânicos).
+                          aprovada (pode conter erros biomecânicos). Aprova em Administração.
+                        </p>
+                      )}
+                      {latestJob?.status === "failed" && (
+                        <p>
+                          A geração de vídeo falhou.
+                          {latestJob.safe_error ? ` ${latestJob.safe_error}` : ""} Usa os
+                          passos escritos.
                         </p>
                       )}
                       {!latestJob && !approvedDemo && assist.status === "answered" && (

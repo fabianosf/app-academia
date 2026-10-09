@@ -36,6 +36,8 @@ class LiveClass(models.Model):
     participants = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=20, choices=Status.choices)
     tone = models.CharField(max_length=128, blank=True, default="")
+    # URL de embed/HLS/página do fornecedor (LiveKit/Daily/YouTube Live/etc.)
+    stream_url = models.URLField(max_length=1024, blank=True, default="")
 
     class Meta:
         ordering = ["status", "time_label"]

@@ -18,6 +18,8 @@ class LiveClassSerializer(serializers.ModelSerializer):
     durationMin = serializers.IntegerField(source="duration_min")
     instructorId = serializers.CharField(source="instructor.public_id", read_only=True)
     instructor = InstructorSerializer(read_only=True)
+    streamUrl = serializers.URLField(source="stream_url", required=False, allow_blank=True)
+    streamConfigured = serializers.SerializerMethodField()
 
     class Meta:
         model = LiveClass
@@ -35,7 +37,12 @@ class LiveClassSerializer(serializers.ModelSerializer):
             "participants",
             "status",
             "tone",
+            "streamUrl",
+            "streamConfigured",
         ]
+
+    def get_streamConfigured(self, obj):
+        return bool((obj.stream_url or "").strip())
 
 
 class LiveClassWriteSerializer(serializers.Serializer):
@@ -53,11 +60,13 @@ class LiveClassWriteSerializer(serializers.Serializer):
     )
     tone = serializers.CharField(required=False, allow_blank=True, default="")
     instructorId = serializers.CharField(required=False, allow_blank=True)
+    streamUrl = serializers.URLField(required=False, allow_blank=True, default="")
 
     def create(self, validated_data):
         import uuid
 
         instructor_id = validated_data.pop("instructorId", "") or ""
+        stream_url = validated_data.pop("streamUrl", "") or ""
         instructor = None
         if instructor_id:
             instructor = Instructor.objects.filter(public_id=instructor_id).first()
@@ -82,6 +91,7 @@ class LiveClassWriteSerializer(serializers.Serializer):
             participants=0,
             status=validated_data.get("status", LiveClass.Status.UPCOMING),
             tone=validated_data.get("tone", ""),
+            stream_url=stream_url,
         )
 
 

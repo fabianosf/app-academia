@@ -53,6 +53,7 @@ class DemoGenerationJobSerializer(serializers.ModelSerializer):
             "id",
             "status",
             "provider",
+            "provider_job_id",
             "persona",
             "safe_error",
             "demo",

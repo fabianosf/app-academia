@@ -185,6 +185,7 @@ class DemoGenerationJob(models.Model):
         related_name="jobs",
     )
     provider = models.CharField(max_length=64, blank=True, default="")
+    provider_job_id = models.CharField(max_length=128, blank=True, default="")
     persona = models.CharField(
         max_length=20,
         choices=ExerciseDemo.Persona.choices,

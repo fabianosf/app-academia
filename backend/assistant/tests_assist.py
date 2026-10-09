@@ -8,7 +8,8 @@ from rest_framework.test import APIClient
 from accounts.models import UserProfile
 from assistant.models import DemoGenerationJob, ExerciseAssistRequest, ExerciseDemo
 from assistant.services.demo_match import find_approved_demo, normalize_key
-from assistant.services.orchestrate import create_assist_request, review_demo
+from assistant.services.orchestrate import refresh_generation_job, review_demo
+from assistant.services.video_demo import VideoJobResult
 
 User = get_user_model()
 
@@ -232,3 +233,64 @@ class ExerciseAssistApiTests(TestCase):
         ok = self.client.get("/api/assistant/demos/?status=review")
         self.assertEqual(ok.status_code, status.HTTP_200_OK)
         self.assertTrue(any(d["id"] == "drev-list2" for d in ok.data))
+
+    @override_settings(
+        VIDEO_DEMO_PROVIDER="http",
+        VIDEO_DEMO_BASE_URL="https://vid.test",
+        VIDEO_DEMO_API_KEY="test-key",
+    )
+    @patch("assistant.services.orchestrate.get_video_demo_provider")
+    def test_get_job_polls_provider_and_persists(self, mock_provider):
+        req = ExerciseAssistRequest.objects.create(
+            public_id="ar-poll",
+            user=self.user,
+            text="elevação",
+            status=ExerciseAssistRequest.Status.ANSWERED,
+        )
+        demo = ExerciseDemo.objects.create(
+            public_id="d-poll",
+            exercise_key="elevacao",
+            exercise_name="Elevação",
+            status=ExerciseDemo.Status.DRAFT,
+            duration_sec=8,
+        )
+        job = DemoGenerationJob.objects.create(
+            public_id="j-poll",
+            request=req,
+            demo=demo,
+            status=DemoGenerationJob.Status.PROCESSING,
+            provider="http",
+            provider_job_id="ext-99",
+            persona="neutral",
+        )
+        provider = mock_provider.return_value
+        provider.poll.return_value = VideoJobResult(
+            status="done",
+            media_url="https://cdn.example.com/demo.mp4",
+            provider_job_id="ext-99",
+        )
+        res = self.client.get(f"/api/assistant/demos/jobs/{job.public_id}/")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data["status"], "done")
+        job.refresh_from_db()
+        demo.refresh_from_db()
+        self.assertEqual(job.status, DemoGenerationJob.Status.DONE)
+        self.assertEqual(demo.media_url, "https://cdn.example.com/demo.mp4")
+        self.assertEqual(demo.status, ExerciseDemo.Status.REVIEW)
+
+    def test_refresh_marks_not_configured_without_provider(self):
+        req = ExerciseAssistRequest.objects.create(
+            public_id="ar-nc",
+            user=self.user,
+            text="x",
+            status=ExerciseAssistRequest.Status.ANSWERED,
+        )
+        job = DemoGenerationJob.objects.create(
+            public_id="j-nc",
+            request=req,
+            status=DemoGenerationJob.Status.PENDING,
+            provider="",
+            provider_job_id="x",
+        )
+        out = refresh_generation_job(job)
+        self.assertEqual(out.status, DemoGenerationJob.Status.NOT_CONFIGURED)

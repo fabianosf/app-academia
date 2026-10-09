@@ -6,8 +6,8 @@ from rest_framework.views import APIView
 from .models import MovementSample, MovementSession
 
 DISCLAIMER = (
-    "Análise demonstrativa. Não substitui avaliação profissional. "
-    "Imagens não são armazenadas neste endpoint."
+    "Análise orientativa com pose estimada no dispositivo. "
+    "Não substitui avaliação profissional. Imagens não são armazenadas neste endpoint."
 )
 
 
@@ -21,7 +21,7 @@ class MovementAnalyzeView(APIView):
         consent = bool(request.data.get("consentAccepted"))
         if not consent:
             return Response(
-                {"detail": "Aceite o consentimento para usar a análise demonstrativa."},
+                {"detail": "Aceite o consentimento para usar a análise."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -48,13 +48,37 @@ class MovementAnalyzeView(APIView):
                 consent_accepted=True,
             )
 
-        score = 78
-        reps = elapsed // 4
-        cues = [
-            "Mantenha o tronco estável.",
-            "Controle a fase excêntrica.",
-            "Respire de forma contínua.",
-        ]
+        # Métricas calculadas no cliente (MediaPipe). Sem inventar se não vierem.
+        source = (request.data.get("source") or "").strip().lower()
+        client_score = request.data.get("score")
+        client_reps = request.data.get("reps")
+        client_cues = request.data.get("cues")
+
+        if source in ("client_pose", "mediapipe") and client_score is not None:
+            try:
+                score = max(0, min(100, int(client_score)))
+            except (TypeError, ValueError):
+                return Response({"detail": "score inválido."}, status=400)
+            try:
+                reps = max(0, min(10_000, int(client_reps or 0)))
+            except (TypeError, ValueError):
+                return Response({"detail": "reps inválido."}, status=400)
+            if isinstance(client_cues, list):
+                cues = [str(c)[:200] for c in client_cues[:8]]
+            else:
+                cues = ["Pose detetada no dispositivo."]
+            if not cues:
+                cues = ["Pose detetada no dispositivo."]
+        else:
+            # Sem CV no cliente: não fingimos análise biomecânica.
+            score = 0
+            reps = 0
+            cues = [
+                "Visão computacional local não enviou métricas.",
+                "Ativa a câmera com consentimento para análise por pose no dispositivo.",
+                "Conteúdo educativo — não substitui profissional.",
+            ]
+
         sample = MovementSample.objects.create(
             session=session,
             elapsed_seconds=elapsed,
@@ -70,6 +94,7 @@ class MovementAnalyzeView(APIView):
                 "reps": sample.reps,
                 "cues": sample.cues,
                 "disclaimer": sample.disclaimer,
+                "source": source or "none",
             }
         )
 

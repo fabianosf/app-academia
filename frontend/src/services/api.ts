@@ -141,12 +141,17 @@ export function createWorkoutApi(payload: {
   });
 }
 
-export function createLiveClassApi(payload: { title: string; category?: string }) {
+export function createLiveClassApi(payload: {
+  title: string;
+  category?: string;
+  streamUrl?: string;
+}) {
   return apiFetch<LiveClass>("/live/classes/", {
     method: "POST",
     body: JSON.stringify({
       title: payload.title,
       category: payload.category ?? "Geral",
+      streamUrl: payload.streamUrl ?? "",
     }),
   });
 }
@@ -303,6 +308,10 @@ export function analyzeMovementApi(payload: {
   elapsedSeconds: number;
   consentAccepted?: boolean;
   sessionId?: number;
+  score?: number;
+  reps?: number;
+  cues?: string[];
+  source?: string;
 }) {
   return apiFetch<{
     sessionId: number;
@@ -310,6 +319,7 @@ export function analyzeMovementApi(payload: {
     reps: number;
     cues: string[];
     disclaimer: string;
+    source?: string;
   }>("/movement/analyze/", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -420,4 +430,8 @@ export function reviewDemoApi(demoId: string, action: "approve" | "reject") {
     method: "POST",
     body: JSON.stringify({ action }),
   });
+}
+
+export function fetchDemoJob(jobId: string) {
+  return apiFetch<DemoJobDto>(`/assistant/demos/jobs/${jobId}/`);
 }
