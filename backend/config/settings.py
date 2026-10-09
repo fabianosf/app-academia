@@ -139,8 +139,30 @@ CORS_ALLOWED_ORIGIN_REGEXES = (
 )
 CORS_ALLOW_CREDENTIALS = True
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
+CSRF_TRUSTED_ORIGINS = [
+    o.strip()
+    for o in os.getenv(
+        "CSRF_TRUSTED_ORIGINS",
+        ",".join(CORS_ALLOWED_ORIGINS) if CORS_ALLOWED_ORIGINS else FRONTEND_URL,
+    ).split(",")
+    if o.strip()
+]
+
+# JWT em cookies HttpOnly (SameSite=Lax mitiga CSRF cross-site em POST).
+JWT_ACCESS_COOKIE = "forma_access"
+JWT_REFRESH_COOKIE = "forma_refresh"
+JWT_COOKIE_PATH = "/"
+JWT_COOKIE_SAMESITE = "Lax"
+JWT_COOKIE_SECURE = os.getenv(
+    "JWT_COOKIE_SECURE",
+    "true" if FRONTEND_URL.startswith("https") else "false",
+).lower() in ("1", "true", "yes")
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
+        "accounts.authentication.CookieJWTAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
@@ -153,6 +175,11 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 50,
+    "DEFAULT_THROTTLE_RATES": {
+        "auth": "30/min",
+        "anon": "120/min",
+        "user": "600/min",
+    },
 }
 
 SIMPLE_JWT = {
@@ -161,8 +188,6 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
-
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@formacomfabiano.local")
 EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"

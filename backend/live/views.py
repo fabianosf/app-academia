@@ -1,5 +1,5 @@
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -8,6 +8,7 @@ from .serializers import (
     ClassReservationSerializer,
     InstructorSerializer,
     LiveClassSerializer,
+    LiveClassWriteSerializer,
 )
 
 
@@ -18,12 +19,25 @@ class InstructorListView(APIView):
 
 
 class LiveClassListView(APIView):
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [IsAuthenticated(), IsAdminUser()]
+        return [IsAuthenticated()]
+
     def get(self, request):
         qs = LiveClass.objects.select_related("instructor").all()
         status_filter = request.query_params.get("status")
         if status_filter:
             qs = qs.filter(status=status_filter)
         return Response(LiveClassSerializer(qs, many=True).data)
+
+    def post(self, request):
+        serializer = LiveClassWriteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        obj = serializer.save()
+        return Response(
+            LiveClassSerializer(obj).data, status=status.HTTP_201_CREATED
+        )
 
 
 class LiveClassDetailView(APIView):

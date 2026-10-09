@@ -37,6 +37,7 @@ import {
   fetchWorkouts,
   fetchMe,
   login,
+  logout,
   patchMe,
   patchProfile,
   toggleFavoriteApi,
@@ -47,7 +48,6 @@ import {
   type LoadLogRow,
   type ProgressSummary,
 } from "@/services/api";
-import { clearTokens } from "@/services/http";
 
 type ThemeMode = "light" | "dark";
 
@@ -165,12 +165,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshTraining = useCallback(async () => {
-    const [hist, g, a, loads, progress] = await Promise.all([
+    const [hist, g, a, loads, progress, wos, exs, classes] = await Promise.all([
       fetchHistory(),
       fetchGoals(),
       fetchAchievements(),
       fetchLoadLogs(),
       fetchProgress(),
+      fetchWorkouts(),
+      fetchExercises(),
+      fetchLiveClasses(),
     ]);
     setHistory(hist);
     setGoals(g);
@@ -179,6 +182,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setWeeklyFrequency(progress.weeklyFrequency);
     setMuscleProgress(progress.muscleProgress);
     setUser((u) => ({ ...u, streakDays: progress.streakDays }));
+    setWorkouts(wos);
+    setExercises(exs);
+    setLiveClasses(classes);
   }, []);
 
   const applyMe = useCallback((me: ApiUser) => {
@@ -268,7 +274,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   const signOut = useCallback(() => {
-    clearTokens();
+    void logout();
     setAuthenticated(false);
     setReady(false);
     setUser(defaultUser);

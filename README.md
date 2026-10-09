@@ -53,7 +53,7 @@ curl -X POST http://127.0.0.1:8000/api/auth/token/ \
   -d '{"username":"fabiano","password":"forma123"}'
 ```
 
-Use o `access` no header: `Authorization: Bearer <token>`.
+A sessão usa cookies **HttpOnly** (`forma_access` / `forma_refresh`). O frontend chama a API com `credentials: "include"` (via proxy `/api`). Logout: `POST /api/auth/logout/`.
 
 ### Principais endpoints
 
@@ -85,9 +85,17 @@ No boot, se não houver sessão JWT, o app abre `/login`. Conta demo: `fabiano` 
 
 Rotas de autenticação: `/login`, `/esqueci-senha`, `/redefinir-senha`.
 
+## CI
+
+GitHub Actions (`.github/workflows/ci.yml`) em push/PR para `main`:
+
+- Backend: `pip install`, `manage.py check`, `manage.py test`
+- Frontend: `npm ci`, `npm audit` (aviso), `tsc --noEmit`, `npm run build`
+
 ## Observações
 
 - SQLite em desenvolvimento (`backend/db.sqlite3`).
 - CORS liberado para `http://localhost:5173`.
+- Sessão em cookies HttpOnly; Admin de conteúdo exige conta staff.
 - Sala ao vivo e análise por câmera são demonstrativas; imagens não são armazenadas.
 - Conteúdo educativo — não substitui avaliação profissional.

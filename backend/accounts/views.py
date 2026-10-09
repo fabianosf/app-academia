@@ -1,18 +1,20 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import send_mail
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError as DjangoValidationError
-
+from .cookies import clear_jwt_cookies, set_jwt_cookies
 from .models import UserProfile
 from .serializers import (
     RegisterSerializer,
@@ -22,6 +24,10 @@ from .serializers import (
 )
 
 User = get_user_model()
+
+
+class AuthThrottle(ScopedRateThrottle):
+    scope = "auth"
 
 
 class FormaTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -38,12 +44,58 @@ class FormaTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class FormaTokenObtainPairView(TokenObtainPairView):
     serializer_class = FormaTokenObtainPairSerializer
+    throttle_classes = [AuthThrottle]
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        if response.status_code == 200 and isinstance(response.data, dict):
+            access = response.data.get("access")
+            refresh = response.data.get("refresh")
+            if access and refresh:
+                set_jwt_cookies(response, access, refresh)
+                # Não devolve tokens no body (evita XSS via JS).
+                response.data = {"detail": "ok"}
+        return response
+
+
+class CookieTokenRefreshView(TokenRefreshView):
+    throttle_classes = [AuthThrottle]
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        data = request.data.copy() if hasattr(request.data, "copy") else dict(request.data)
+        if not data.get("refresh"):
+            cookie_refresh = request.COOKIES.get(settings.JWT_REFRESH_COOKIE)
+            if cookie_refresh:
+                data["refresh"] = cookie_refresh
+        serializer = self.get_serializer(data=data)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as exc:
+            raise InvalidToken(exc.args[0]) from exc
+        access = serializer.validated_data["access"]
+        refresh = serializer.validated_data.get("refresh")
+        response = Response({"detail": "ok"})
+        set_jwt_cookies(response, access, refresh)
+        return response
+
+
+class LogoutView(APIView):
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [AuthThrottle]
+
+    def post(self, request):
+        response = Response({"detail": "ok"})
+        clear_jwt_cookies(response)
+        return response
 
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [AuthThrottle]
 
 
 class MeView(APIView):
@@ -97,6 +149,7 @@ class HealthView(APIView):
 
 class PasswordResetRequestView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [AuthThrottle]
 
     def post(self, request):
         email = (request.data.get("email") or "").strip()
@@ -138,6 +191,7 @@ class PasswordResetRequestView(APIView):
 
 class PasswordResetConfirmView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [AuthThrottle]
 
     def post(self, request):
         uid = request.data.get("uid") or ""

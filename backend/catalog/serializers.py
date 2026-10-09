@@ -66,7 +66,7 @@ class WorkoutSerializer(serializers.ModelSerializer):
 
 class WorkoutWriteSerializer(serializers.ModelSerializer):
     public_id = serializers.CharField(required=False)
-    duration_min = serializers.IntegerField()
+    duration_min = serializers.IntegerField(required=False)
     exercise_ids = serializers.ListField(
         child=serializers.CharField(), write_only=True, required=False
     )
@@ -89,10 +89,33 @@ class WorkoutWriteSerializer(serializers.ModelSerializer):
             "exercise_ids",
         ]
 
+    def to_internal_value(self, data):
+        payload = dict(data)
+        if "durationMin" in payload and "duration_min" not in payload:
+            payload["duration_min"] = payload.pop("durationMin")
+        if "exerciseIds" in payload and "exercise_ids" not in payload:
+            payload["exercise_ids"] = payload.pop("exerciseIds")
+        return super().to_internal_value(payload)
+
+    def validate(self, attrs):
+        if self.instance is None and not attrs.get("duration_min"):
+            attrs["duration_min"] = 30
+        if self.instance is None and "calories" not in attrs:
+            attrs["calories"] = 200
+        if self.instance is None and not attrs.get("place"):
+            attrs["place"] = Workout.Place.CASA
+        if self.instance is None and not attrs.get("level"):
+            attrs["level"] = Workout.Level.INICIANTE
+        if self.instance is None and not attrs.get("focus"):
+            attrs["focus"] = "Geral"
+        return attrs
+
     def create(self, validated_data):
+        import uuid
+
         exercise_ids = validated_data.pop("exercise_ids", [])
         if not validated_data.get("public_id"):
-            validated_data["public_id"] = f"w{Workout.objects.count() + 1}"
+            validated_data["public_id"] = f"w{uuid.uuid4().hex[:10]}"
         workout = Workout.objects.create(**validated_data)
         self._set_exercises(workout, exercise_ids)
         return workout

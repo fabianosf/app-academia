@@ -12,7 +12,7 @@ import type {
   Workout,
   WorkoutHistory,
 } from "@/types";
-import { apiFetch, clearTokens, getAccessToken, setTokens, unwrapList, type Paginated } from "./http";
+import { apiFetch, clearTokens, unwrapList, type Paginated } from "./http";
 
 export type ApiUser = User & {
   onboarded?: boolean;
@@ -31,7 +31,8 @@ export type ProgressSummary = {
 export type LoadLogRow = { id?: number; exercise: string; last: string; note: string };
 
 export async function login(username: string, password: string) {
-  const data = await apiFetch<{ access: string; refresh: string }>(
+  clearTokens();
+  return apiFetch<{ detail: string }>(
     "/auth/token/",
     {
       method: "POST",
@@ -39,8 +40,18 @@ export async function login(username: string, password: string) {
     },
     false,
   );
-  setTokens(data.access, data.refresh);
-  return data;
+}
+
+export async function logout() {
+  try {
+    await apiFetch<{ detail: string }>(
+      "/auth/logout/",
+      { method: "POST", body: JSON.stringify({}) },
+      false,
+    );
+  } finally {
+    clearTokens();
+  }
 }
 
 export async function requestPasswordReset(email: string) {
@@ -69,15 +80,75 @@ export async function confirmPasswordReset(payload: {
   );
 }
 
-/** Tenta sessão existente; não faz login automático com demo. */
+/** Tenta sessão via cookie HttpOnly; não faz login automático com demo. */
 export async function tryRestoreSession() {
-  if (!getAccessToken()) return null;
   try {
     return await fetchMe();
   } catch {
     clearTokens();
     return null;
   }
+}
+
+export function createExerciseApi(payload: {
+  name: string;
+  sets?: number;
+  reps?: string;
+  restSeconds?: number;
+  tip?: string;
+  focus?: string;
+  place?: string;
+}) {
+  return apiFetch<Exercise>("/exercises/", {
+    method: "POST",
+    body: JSON.stringify({
+      name: payload.name,
+      sets: payload.sets ?? 3,
+      reps: payload.reps ?? "10",
+      restSeconds: payload.restSeconds ?? 45,
+      tip: payload.tip ?? "",
+      focus: payload.focus ?? "Geral",
+      place: payload.place ?? "Casa",
+    }),
+  });
+}
+
+export function createWorkoutApi(payload: {
+  name: string;
+  description?: string;
+  place?: string;
+  level?: string;
+  durationMin?: number;
+  calories?: number;
+  focus?: string;
+}) {
+  return apiFetch<Workout>("/workouts/", {
+    method: "POST",
+    body: JSON.stringify({
+      name: payload.name,
+      description: payload.description ?? "",
+      place: payload.place ?? "Casa",
+      level: payload.level ?? "Iniciante",
+      duration_min: payload.durationMin ?? 30,
+      calories: payload.calories ?? 200,
+      focus: payload.focus ?? "Geral",
+      equipment: [],
+      muscles: [],
+      safety: "",
+      tone: "",
+      exercise_ids: [],
+    }),
+  });
+}
+
+export function createLiveClassApi(payload: { title: string; category?: string }) {
+  return apiFetch<LiveClass>("/live/classes/", {
+    method: "POST",
+    body: JSON.stringify({
+      title: payload.title,
+      category: payload.category ?? "Geral",
+    }),
+  });
 }
 
 export function fetchMe() {

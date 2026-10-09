@@ -1,24 +1,13 @@
 const API_BASE = import.meta.env.VITE_API_URL ?? "/api";
 
-const ACCESS_KEY = "forma-access";
-const REFRESH_KEY = "forma-refresh";
-
-export function getAccessToken() {
-  return localStorage.getItem(ACCESS_KEY);
-}
-
-export function getRefreshToken() {
-  return localStorage.getItem(REFRESH_KEY);
-}
-
-export function setTokens(access: string, refresh?: string) {
-  localStorage.setItem(ACCESS_KEY, access);
-  if (refresh) localStorage.setItem(REFRESH_KEY, refresh);
-}
-
+/** Limpa tokens legados em localStorage (migração para cookies HttpOnly). */
 export function clearTokens() {
-  localStorage.removeItem(ACCESS_KEY);
-  localStorage.removeItem(REFRESH_KEY);
+  try {
+    localStorage.removeItem("forma-access");
+    localStorage.removeItem("forma-refresh");
+  } catch {
+    /* ignore */
+  }
 }
 
 export class ApiError extends Error {
@@ -31,21 +20,18 @@ export class ApiError extends Error {
   }
 }
 
-async function refreshAccess(): Promise<string | null> {
-  const refresh = getRefreshToken();
-  if (!refresh) return null;
+async function refreshAccess(): Promise<boolean> {
   const res = await fetch(`${API_BASE}/auth/token/refresh/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh }),
+    credentials: "include",
+    body: JSON.stringify({}),
   });
   if (!res.ok) {
     clearTokens();
-    return null;
+    return false;
   }
-  const data = (await res.json()) as { access: string };
-  setTokens(data.access);
-  return data.access;
+  return true;
 }
 
 export async function apiFetch<T>(
@@ -57,14 +43,16 @@ export async function apiFetch<T>(
   if (!headers.has("Content-Type") && options.body) {
     headers.set("Content-Type", "application/json");
   }
-  const token = getAccessToken();
-  if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers,
+    credentials: "include",
+  });
 
   if (res.status === 401 && retry) {
-    const next = await refreshAccess();
-    if (next) return apiFetch<T>(path, options, false);
+    const ok = await refreshAccess();
+    if (ok) return apiFetch<T>(path, options, false);
   }
 
   if (res.status === 204) return undefined as T;
