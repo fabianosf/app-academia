@@ -1,10 +1,12 @@
 import uuid
 
 from rest_framework import status
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
+
+from accounts.permissions import IsPlatformAdmin
 
 from .models import (
     AssistFeedback,
@@ -95,10 +97,11 @@ class ExerciseAssistClarifyView(APIView):
 class ApprovedDemoListView(APIView):
     def get(self, request):
         status_filter = (request.query_params.get("status") or "approved").strip().lower()
-        # Utilizadores normais só veem aprovadas; staff pode pedir review/draft/rejected.
-        if status_filter != "approved" and not request.user.is_staff:
+        # Utilizadores normais só veem aprovadas; admin da plataforma pode pedir review/draft/rejected.
+        is_admin = IsPlatformAdmin().has_permission(request, self)
+        if status_filter != "approved" and not is_admin:
             return Response(
-                {"detail": "Apenas staff pode listar demos não aprovadas."},
+                {"detail": "Apenas administradores podem listar demos não aprovadas."},
                 status=403,
             )
         allowed = {c.value for c in ExerciseDemo.Status}
@@ -186,7 +189,7 @@ class AssistFeedbackCreateView(APIView):
 
 
 class DemoReviewView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin]
 
     def post(self, request, public_id):
         demo = ExerciseDemo.objects.filter(public_id=public_id).first()

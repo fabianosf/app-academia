@@ -506,8 +506,8 @@ export function NinaPage() {
                       </video>
                       {!approvedDemo?.media_url && (
                         <p className="text-xs text-stone-500">
-                          Vídeo do teu pedido (ainda não entra no catálogo partilhado). Staff
-                          pode aprovar em Administração.
+                          Vídeo do teu pedido (ainda não entra no catálogo partilhado). Um
+                          administrador pode aprovar em Administração.
                         </p>
                       )}
                     </div>

@@ -15,7 +15,7 @@ Legenda de estado:
 
 ## 1. Correções de código (auditoria)
 
-### H5 — Docs seed / papéis (A-14) · esforço pequeno · **Pendente**
+### H5 — Docs seed / papéis (A-14) · esforço pequeno · **Feito (working tree)**
 
 | Ficheiro | Tipo de alteração |
 |----------|-------------------|
@@ -26,7 +26,7 @@ Não mexe em runtime.
 
 ---
 
-### P4 — Consentimento no detalhe do professor (A-07) · esforço pequeno · **Pendente**
+### P4 — Consentimento no detalhe do professor (A-07) · esforço pequeno · **Feito** (`b5308d6`; categoria `goals` = UserGoal)
 
 | Ficheiro | Tipo de alteração |
 |----------|-------------------|
@@ -36,7 +36,7 @@ Não mexe em runtime.
 
 ---
 
-### P3 — Visibilidade de conteúdo para aluno (A-05, A-06) · esforço médio · **Pendente**
+### P3 — Visibilidade de conteúdo para aluno (A-05, A-06) · esforço médio · **Feito (working tree)**
 
 | Ficheiro | Tipo de alteração |
 |----------|-------------------|
@@ -47,7 +47,7 @@ Não mexe em runtime.
 
 ---
 
-### H1 — Unificar permissão admin (A-08) · esforço pequeno · **Pendente**
+### H1 — Unificar permissão admin (A-08) · esforço pequeno · **Feito (working tree)**
 
 | Ficheiro | Tipo de alteração |
 |----------|-------------------|
@@ -79,7 +79,7 @@ Não mexe em runtime.
 
 ---
 
-### H4 — ContentAssign valida existência (A-17) · esforço pequeno · **Pendente**
+### H4 — ContentAssign valida existência (A-17) · esforço pequeno · **Feito (working tree)**
 
 | Ficheiro | Tipo de alteração |
 |----------|-------------------|
@@ -88,7 +88,7 @@ Não mexe em runtime.
 
 ---
 
-### H6 — Rotular live / vídeo local (A-10, A-11) · esforço pequeno · **Pendente**
+### H6 — Rotular live / vídeo local (A-10, A-11) · esforço pequeno · **Feito (working tree)**
 
 | Ficheiro | Tipo de alteração |
 |----------|-------------------|

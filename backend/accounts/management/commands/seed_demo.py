@@ -11,7 +11,7 @@ from django.utils import timezone
 from accounts.models import UserProfile
 from assistant.models import ChatThread
 from branding.models import SiteSettings
-from catalog.models import Exercise, Workout, WorkoutExercise
+from catalog.models import Exercise, PublishStatus, Workout, WorkoutExercise
 from live.models import ClassReservation, Instructor, LiveClass
 from notifications.models import Notification
 from training.models import (
@@ -167,9 +167,11 @@ class Command(BaseCommand):
         )
 
         for data in EXERCISES:
+            defaults = {k: v for k, v in data.items() if k != "public_id"}
+            defaults["publish_status"] = PublishStatus.PUBLISHED
             Exercise.objects.update_or_create(
                 public_id=data["public_id"],
-                defaults={k: v for k, v in data.items() if k != "public_id"},
+                defaults=defaults,
             )
 
         exercise_map = {e.public_id: e for e in Exercise.objects.all()}
@@ -179,9 +181,12 @@ class Command(BaseCommand):
             workout, _ = Workout.objects.update_or_create(
                 public_id=data["public_id"],
                 defaults={
-                    k: v
-                    for k, v in data.items()
-                    if k not in ("public_id", "exercise_ids")
+                    **{
+                        k: v
+                        for k, v in data.items()
+                        if k not in ("public_id", "exercise_ids")
+                    },
+                    "publish_status": PublishStatus.PUBLISHED,
                 },
             )
             workout.workout_exercises.all().delete()

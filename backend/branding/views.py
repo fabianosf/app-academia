@@ -1,6 +1,8 @@
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from accounts.permissions import IsPlatformAdmin
 
 from .models import SiteSettings
 
@@ -8,7 +10,7 @@ from .models import SiteSettings
 class SiteSettingsView(APIView):
     def get_permissions(self):
         if self.request.method in ("PUT", "PATCH"):
-            return [IsAuthenticated(), IsAdminUser()]
+            return [IsAuthenticated(), IsPlatformAdmin()]
         return [IsAuthenticated()]
 
     def get(self, request):

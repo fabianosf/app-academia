@@ -62,7 +62,7 @@ VIDEO_DEMO_PROVIDER=local
 ```
 
 Sem API key. O backend gera um MP4 ~7s com o **nome do exercício e passos em texto** (placeholder educativo — **não** é biomecânica real).  
-A Nina mostra esse vídeo como **pré-visualização** no teu pedido; para entrar no catálogo partilhado continua a ser preciso aprovação staff.
+A Nina mostra esse vídeo como **pré-visualização** no teu pedido; para entrar no catálogo partilhado continua a ser preciso aprovação de administrador (`role=admin`). Em produção, não uses `VIDEO_DEMO_PROVIDER=local` sem aceite explícito (é placeholder educativo, não biomecânica).
 
 Requisitos Python: `pillow`, `imageio`, `imageio-ffmpeg` (no `requirements.txt`).
 
@@ -93,12 +93,12 @@ VIDEO_DEMO_BASE_URL=https://teu-gateway.example.com
 
 ### Revisão humana
 
-Vídeos novos ficam com `status=review` até staff aprovar em **Administração**.  
+Vídeos novos ficam com `status=review` até um administrador aprovar em **Administração**.  
 Na Nina, o **pedido atual** pode pré-visualizar o `media_url` em revisão; só demos `approved` entram no catálogo partilhado (`matchedDemo`).
 
 ## 4. Live (stream por aula)
 
-Campo `stream_url` / `streamUrl` em cada `LiveClass` (Django admin ou `POST /api/live/classes/` staff).
+Campo `stream_url` / `streamUrl` em cada `LiveClass` (Django admin ou `POST /api/live/classes/` com permissão de gestão).
 
 - URL de embed (LiveKit/Daily/YouTube Live/etc.) → iframe na sala
 - URL `.m3u8` / `.mp4` → `<video>`

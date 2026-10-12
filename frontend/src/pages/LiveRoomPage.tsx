@@ -10,7 +10,10 @@ export function LiveRoomPage() {
   const item = liveClasses.find((c) => c.id === id) ?? liveClasses[0];
   const teacher = instructors.find((i) => i.id === item?.instructorId);
   const [chat, setChat] = useState([
-    { from: "Sistema", text: "Bem-vindo à sala. Usa o chat para interagir com a turma." },
+    {
+      from: "Sistema",
+      text: "Chat local de demonstração — as mensagens ficam só neste browser, não há sincronização entre utilizadores.",
+    },
   ]);
   const [text, setText] = useState("");
   const [hand, setHand] = useState(false);
@@ -71,7 +74,10 @@ export function LiveRoomPage() {
           )}
         </div>
         <div className="rounded-2xl border border-stone-200 bg-white p-3">
-          <p className="text-sm font-semibold">Chat da sala</p>
+          <p className="text-sm font-semibold">Chat local (só neste browser)</p>
+          <p className="mt-1 text-xs text-stone-500">
+            Mensagens não são partilhadas com outros participantes nesta versão.
+          </p>
           <ul className="mt-2 max-h-48 space-y-2 overflow-auto text-sm">
             {chat.map((m, i) => (
               <li key={i}>

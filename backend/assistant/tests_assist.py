@@ -98,7 +98,7 @@ class ExerciseAssistApiTests(TestCase):
             username="staffy",
             email="staff@example.com",
             password="SenhaSegura1!",
-            is_staff=True,
+            role=User.Role.ADMIN,
         )
         self.client.force_authenticate(user=self.user)
 

@@ -211,3 +211,29 @@ def content_visible_to_student_q(student, *, content_type: str, id_field: str = 
         Q(**{f"{id_field}__in": assigned_ids})
         | ~Q(**{f"{id_field}__in": restricted_ids})
     )
+
+
+def workouts_accessible_qs(user):
+    """
+    Treinos que o utilizador pode listar/usar (sessões, favoritos).
+    Aluno: published + regra de atribuição. Professor: published + seus rascunhos.
+    Admin: todos.
+    """
+    from catalog.models import PublishStatus, Workout
+
+    qs = Workout.objects.all()
+    role = getattr(user, "role", "student")
+    if role == User.Role.ADMIN or getattr(user, "is_superuser", False):
+        return qs
+    if role == User.Role.TEACHER:
+        return qs.filter(
+            Q(publish_status=PublishStatus.PUBLISHED)
+            | Q(created_by=user, publish_status=PublishStatus.DRAFT)
+        )
+    return qs.filter(content_visible_to_student_q(user, content_type="workout"))
+
+
+def workout_accessible_to_user(user, workout) -> bool:
+    if workout is None:
+        return False
+    return workouts_accessible_qs(user).filter(pk=workout.pk).exists()

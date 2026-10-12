@@ -117,6 +117,7 @@ class ContentAssignment(models.Model):
 
     class ContentType(models.TextChoices):
         WORKOUT = "workout", "Treino"
+        EXERCISE = "exercise", "Exercício"
         LIVE_CLASS = "live_class", "Aula ao vivo"
         LINK = "link", "Link / vídeo externo"
 

@@ -29,17 +29,21 @@ from .serializers import (
 
 class FavoriteListView(APIView):
     def get(self, request):
+        from accounts.services_org import workouts_accessible_qs
+
+        accessible = workouts_accessible_qs(request.user)
         ids = list(
-            WorkoutFavorite.objects.filter(user=request.user).values_list(
-                "workout__public_id", flat=True
-            )
+            WorkoutFavorite.objects.filter(user=request.user, workout__in=accessible)
+            .values_list("workout__public_id", flat=True)
         )
         return Response({"favorites": ids})
 
     def post(self, request):
+        from accounts.services_org import workout_accessible_to_user
+
         workout_id = request.data.get("workoutId")
         workout = Workout.objects.filter(public_id=workout_id).first()
-        if not workout:
+        if not workout or not workout_accessible_to_user(request.user, workout):
             return Response(
                 {"detail": "Treino não encontrado."}, status=status.HTTP_404_NOT_FOUND
             )

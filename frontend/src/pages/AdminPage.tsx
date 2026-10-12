@@ -121,7 +121,7 @@ export function AdminPage() {
     <div className="space-y-6">
       <PageHeader
         title="Administração"
-        subtitle="Conteúdo, marca e revisão de demonstrações (requer conta staff)."
+        subtitle="Conteúdo, marca e revisão de demonstrações (requer role=admin)."
       />
       <p className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-600">
         Sessão: {user.name}
@@ -273,11 +273,13 @@ export function AdminPage() {
       <section className="rounded-2xl border border-dashed border-stone-300 p-4">
         <h2 className="font-display font-semibold">Integrações</h2>
         <ul className="mt-2 grid gap-2 text-sm sm:grid-cols-2">
-          {["Pagamentos", "Streaming ao vivo", "Visão computacional"].map((i) => (
-            <li key={i} className="rounded-xl bg-white p-3">
-              {i} · pendente
-            </li>
-          ))}
+          <li className="rounded-xl bg-white p-3">Pagamentos · pendente</li>
+          <li className="rounded-xl bg-white p-3">
+            Streaming ao vivo partilhado · pendente (sala usa streamUrl por aula; chat é local)
+          </li>
+          <li className="rounded-xl bg-emerald-50 p-3 text-emerald-900">
+            Análise de movimento (MediaPipe no browser) · ativo em /analise-movimento
+          </li>
           <li className="rounded-xl bg-emerald-50 p-3 text-emerald-900">
             Auth JWT (cookies) · ativo
           </li>

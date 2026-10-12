@@ -33,7 +33,8 @@ class ExerciseViewSet(viewsets.ModelViewSet):
                 Q(publish_status=PublishStatus.PUBLISHED)
                 | Q(created_by=user, publish_status=PublishStatus.DRAFT)
             )
-        return qs.filter(publish_status=PublishStatus.PUBLISHED)
+        # Aluno: published + regra de atribuição (tipo exercise).
+        return qs.filter(content_visible_to_student_q(user, content_type="exercise"))
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -155,6 +156,22 @@ class ContentPublishView(APIView):
         return Response({"ok": True, "publishStatus": obj.publish_status})
 
 
+def _content_exists(content_type: str, content_id: str) -> bool:
+    if content_type == ContentAssignment.ContentType.WORKOUT:
+        return Workout.objects.filter(public_id=content_id).exists()
+    if content_type == ContentAssignment.ContentType.EXERCISE:
+        return Exercise.objects.filter(public_id=content_id).exists()
+    if content_type == ContentAssignment.ContentType.LIVE_CLASS:
+        from live.models import LiveClass
+
+        return LiveClass.objects.filter(public_id=content_id).exists()
+    if content_type == ContentAssignment.ContentType.LINK:
+        from .models import ExternalLink
+
+        return ExternalLink.objects.filter(public_id=content_id).exists()
+    return False
+
+
 class ContentAssignView(APIView):
     permission_classes = [IsTeacherOrAdmin]
 
@@ -164,6 +181,8 @@ class ContentAssignView(APIView):
         student_id = request.data.get("studentId")
         if content_type not in ContentAssignment.ContentType.values:
             return Response({"detail": "contentType inválido."}, status=400)
+        if not content_id or not _content_exists(content_type, content_id):
+            return Response({"detail": "Conteúdo não encontrado."}, status=404)
         from django.contrib.auth import get_user_model
 
         student = get_user_model().objects.filter(pk=student_id, role="student").first()

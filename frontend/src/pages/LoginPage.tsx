@@ -73,7 +73,7 @@ export function LoginPage() {
   return (
     <AuthLayout
       title="Bem-vindo de volta"
-      subtitle="Entre para continuar seus treinos, aulas e conversas com a Nina — no seu ritmo."
+      subtitle="Entre para continuar seus treinos, reservas de aulas e conversas com a Nina — no seu ritmo. A sala ao vivo é demonstrativa até haver stream configurado."
     >
       <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8a6d5d]">
         Acesso do aluno

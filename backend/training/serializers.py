@@ -48,7 +48,7 @@ class WorkoutSessionSerializer(serializers.ModelSerializer):
 class WorkoutSessionCreateSerializer(serializers.Serializer):
     workoutId = serializers.SlugRelatedField(
         source="workout",
-        queryset=Workout.objects.all(),
+        queryset=Workout.objects.none(),
         slug_field="public_id",
     )
     startedAt = serializers.DateTimeField()
@@ -68,6 +68,17 @@ class WorkoutSessionCreateSerializer(serializers.Serializer):
     )
     place = serializers.CharField(required=False, allow_blank=True, max_length=40)
     date = serializers.DateField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from accounts.services_org import workouts_accessible_qs
+
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user is not None and getattr(user, "is_authenticated", False):
+            self.fields["workoutId"].queryset = workouts_accessible_qs(user)
+        else:
+            self.fields["workoutId"].queryset = Workout.objects.none()
 
     def create(self, validated_data):
         from datetime import date as date_cls
