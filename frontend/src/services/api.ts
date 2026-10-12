@@ -480,7 +480,6 @@ export type TeacherStudentDetail = {
     id: number;
     name: string;
     email: string;
-    goal: string | null;
     level: string | null;
     place: string | null;
     assignmentStartedAt: string;

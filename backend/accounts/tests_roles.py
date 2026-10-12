@@ -8,7 +8,7 @@ from rest_framework.test import APIClient
 from accounts.models import TeacherDataConsent, TeacherStudentAssignment, User, UserProfile
 from accounts.services_org import assign_student_to_teacher, grant_consent, revoke_consent
 from catalog.models import PublishStatus, Workout
-from training.models import WorkoutSession
+from training.models import UserGoal, WorkoutSession
 
 
 class RolesAssignmentConsentTests(TestCase):
@@ -118,6 +118,71 @@ class RolesAssignmentConsentTests(TestCase):
         after = self.client.get(f"/api/teacher/students/{self.student.pk}/")
         self.assertIn("completedSessions", after.data["metrics"])
         self.assertGreaterEqual(after.data["metrics"]["completedSessions"], 1)
+
+    def test_goals_consent_scopes_teacher_detail(self):
+        """Categoria `goals` = UserGoal em charts.goals; sem consentimento não há metas."""
+        assign_student_to_teacher(
+            admin=self.admin, teacher=self.teacher, student=self.student
+        )
+        profile = self.student.profile
+        profile.goal = UserProfile.Goal.EMAGRECER
+        profile.limitations = "dor no joelho — não partilhar"
+        profile.save()
+        UserGoal.objects.create(
+            public_id="goal-1",
+            user=self.student,
+            label="Passos semanais",
+            current=1000,
+            target=5000,
+            unit="passos",
+        )
+        self.client.force_authenticate(user=self.teacher)
+        without = self.client.get(f"/api/teacher/students/{self.student.pk}/")
+        self.assertEqual(without.status_code, 200)
+        self.assertNotIn("goals", without.data.get("charts") or {})
+        self.assertNotIn("goal", without.data["student"])
+        self.assertIn("level", without.data["student"])
+        self.assertIn("place", without.data["student"])
+        self.assertIn("Metas não partilhadas", " ".join(without.data["gaps"]))
+
+        grant_consent(
+            student=self.student,
+            teacher=self.teacher,
+            category=TeacherDataConsent.Category.GOALS,
+        )
+        with_consent = self.client.get(f"/api/teacher/students/{self.student.pk}/")
+        self.assertIn("goals", with_consent.data["charts"])
+        labels = [g["label"] for g in with_consent.data["charts"]["goals"]]
+        self.assertIn("Passos semanais", labels)
+        self.assertNotIn("goal", with_consent.data["student"])
+
+        revoke_consent(
+            student=self.student,
+            teacher=self.teacher,
+            category=TeacherDataConsent.Category.GOALS,
+        )
+        revoked = self.client.get(f"/api/teacher/students/{self.student.pk}/")
+        self.assertNotIn("goals", revoked.data.get("charts") or {})
+        self.assertIn("Metas não partilhadas", " ".join(revoked.data["gaps"]))
+
+    def test_teacher_detail_never_exposes_limitations(self):
+        assign_student_to_teacher(
+            admin=self.admin, teacher=self.teacher, student=self.student
+        )
+        profile = self.student.profile
+        profile.limitations = "secreto clínico"
+        profile.save()
+        grant_consent(
+            student=self.student,
+            teacher=self.teacher,
+            category=TeacherDataConsent.Category.GOALS,
+        )
+        self.client.force_authenticate(user=self.teacher)
+        res = self.client.get(f"/api/teacher/students/{self.student.pk}/")
+        self.assertEqual(res.status_code, 200)
+        self.assertNotIn("limitations", res.data["student"])
+        blob = str(res.data)
+        self.assertNotIn("secreto clínico", blob)
 
     def test_draft_workout_hidden_from_student(self):
         draft = Workout.objects.create(

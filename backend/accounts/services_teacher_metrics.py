@@ -92,12 +92,14 @@ def student_detail_for_teacher(teacher, student) -> dict | None:
     until = timezone.now()
     profile = getattr(student, "profile", None)
 
-    # Perfil mínimo (sem limitations / saúde)
+    # Perfil mínimo operacional (sem limitations / saúde / Nina).
+    # Categoria de consentimento `goals` controla apenas UserGoal em charts.goals
+    # (PAPEIS_E_ADMIN.md) — não o objetivo de onboarding UserProfile.goal.
+    # Por isso profile.goal não entra neste endpoint (evita confusão com `goals`).
     summary = {
         "id": student.pk,
         "name": student.name or student.username,
         "email": student.email,
-        "goal": profile.goal if profile else None,
         "level": profile.level if profile else None,
         "place": profile.place if profile else None,
         "assignmentStartedAt": assignment.started_at.isoformat(),

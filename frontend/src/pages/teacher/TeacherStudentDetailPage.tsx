@@ -49,11 +49,6 @@ export function TeacherStudentDetailPage() {
         <>
           <div className="grid gap-3 rounded-2xl border border-stone-200 bg-white p-4 text-sm sm:grid-cols-2">
             <p>
-              <span className="text-stone-500">Objetivo</span>
-              <br />
-              {data.student.goal || "—"}
-            </p>
-            <p>
               <span className="text-stone-500">Nível</span>
               <br />
               {data.student.level || "—"}
@@ -63,7 +58,7 @@ export function TeacherStudentDetailPage() {
               <br />
               {data.student.place || "—"}
             </p>
-            <p>
+            <p className="sm:col-span-2">
               <span className="text-stone-500">Atribuição desde</span>
               <br />
               {new Date(data.student.assignmentStartedAt).toLocaleString("pt-BR")}
