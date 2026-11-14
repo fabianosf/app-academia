@@ -232,7 +232,7 @@ class RolesAssignmentConsentTests(TestCase):
         )
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.data.get("role"), "student")
-        self.assertIn("forma_access", res.cookies)
+        self.assertIn("aster_access", res.cookies)
 
     def test_teacher_cannot_publish_admin_can(self):
         draft = Workout.objects.create(
@@ -377,7 +377,7 @@ class PortalLoginTests(TestCase):
         )
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(res.data.get("code"), "portal_management_required")
-        self.assertNotIn("forma_access", res.cookies)
+        self.assertNotIn("aster_access", res.cookies)
 
     def test_management_portal_rejects_student(self):
         res = self.client.post(
@@ -391,7 +391,7 @@ class PortalLoginTests(TestCase):
         )
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(res.data.get("code"), "portal_student_required")
-        self.assertNotIn("forma_access", res.cookies)
+        self.assertNotIn("aster_access", res.cookies)
 
     def test_management_portal_accepts_teacher_and_admin(self):
         for username, home in (("portal_prof", "/professor"), ("portal_admin", "/admin")):
@@ -406,7 +406,7 @@ class PortalLoginTests(TestCase):
             )
             self.assertEqual(res.status_code, 200, username)
             self.assertEqual(res.data.get("home"), home)
-            self.assertIn("forma_access", res.cookies)
+            self.assertIn("aster_access", res.cookies)
 
     def test_student_portal_accepts_student(self):
         res = self.client.post(
@@ -420,7 +420,7 @@ class PortalLoginTests(TestCase):
         )
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.data.get("home"), "/")
-        self.assertIn("forma_access", res.cookies)
+        self.assertIn("aster_access", res.cookies)
 
     def test_wrong_password_still_401(self):
         res = self.client.post(

@@ -58,9 +58,9 @@ class CookieAuthTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotIn("access", response.data)
         self.assertNotIn("refresh", response.data)
-        self.assertIn("forma_access", response.cookies)
-        self.assertIn("forma_refresh", response.cookies)
-        self.assertTrue(response.cookies["forma_access"]["httponly"])
+        self.assertIn("aster_access", response.cookies)
+        self.assertIn("aster_refresh", response.cookies)
+        self.assertTrue(response.cookies["aster_access"]["httponly"])
 
     def test_me_works_with_access_cookie(self):
         login = self.client.post(
@@ -83,7 +83,7 @@ class CookieAuthTests(TestCase):
         out = self.client.post("/api/auth/logout/", {}, format="json")
         self.assertEqual(out.status_code, status.HTTP_200_OK)
         # Cookie deleted (max-age 0) or absent value
-        access = out.cookies.get("forma_access")
+        access = out.cookies.get("aster_access")
         if access is not None:
             self.assertIn(access.value, ("", '""'))
 

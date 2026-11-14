@@ -168,8 +168,8 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # JWT em cookies HttpOnly (SameSite=Lax mitiga CSRF cross-site em POST).
-JWT_ACCESS_COOKIE = "forma_access"
-JWT_REFRESH_COOKIE = "forma_refresh"
+JWT_ACCESS_COOKIE = "aster_access"
+JWT_REFRESH_COOKIE = "aster_refresh"
 JWT_COOKIE_PATH = "/"
 JWT_COOKIE_SAMESITE = "Lax"
 JWT_COOKIE_SECURE = os.getenv(

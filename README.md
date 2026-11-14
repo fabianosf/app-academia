@@ -5,7 +5,7 @@ Aplicativo fitness (PT-BR) com frontend React e backend Django REST + JWT.
 ## Estrutura
 
 ```
-forma-com-fabiano/
+aster-coach/
 ├── frontend/   # Vite + React
 ├── backend/    # Django 6 + DRF + SimpleJWT + Nina/ANS LLM
 ├── Academia_Nutrição_Saúde v1.0.md
@@ -60,7 +60,7 @@ curl -X POST http://127.0.0.1:8000/api/auth/token/ \
   -d '{"username":"aluno","password":"aster123"}'
 ```
 
-A sessão usa cookies **HttpOnly** (`forma_access` / `forma_refresh`). O frontend chama a API com `credentials: "include"` (via proxy `/api`). Logout: `POST /api/auth/logout/`.
+A sessão usa cookies **HttpOnly** (`aster_access` / `aster_refresh`). O frontend chama a API com `credentials: "include"` (via proxy `/api`). Logout: `POST /api/auth/logout/`.
 
 ### Principais endpoints
 
