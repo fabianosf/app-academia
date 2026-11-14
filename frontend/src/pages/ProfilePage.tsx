@@ -151,7 +151,7 @@ export function ProfilePage() {
             />
           </label>
           <label className="flex justify-between">
-            Mensagens da Nina{" "}
+            Mensagens da Aster{" "}
             <input
               type="checkbox"
               checked={profile.notifications.nina}

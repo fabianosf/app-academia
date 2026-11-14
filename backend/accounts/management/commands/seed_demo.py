@@ -1,5 +1,6 @@
-"""Seed database with Nina Coach demo data (from frontend mock)."""
+"""Seed database with Aster Coach demo data (from frontend mock)."""
 
+import os
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
@@ -25,9 +26,15 @@ from training.models import (
 
 User = get_user_model()
 TZ = ZoneInfo("America/Sao_Paulo")
-DEMO_USERNAME = os.getenv("DEMO_USERNAME", "fabiano")
-DEMO_EMAIL = os.getenv("DEMO_EMAIL", "fabiano@postay.com.br")
-DEMO_PASSWORD = os.getenv("DEMO_PASSWORD", "forma123")
+DEMO_USERNAME = os.getenv("DEMO_USERNAME", "aluno")
+DEMO_EMAIL = os.getenv("DEMO_EMAIL", "aluno@astercoach.app")
+DEMO_PASSWORD = os.getenv("DEMO_PASSWORD", "aster123")
+DEMO_TEACHER_USERNAME = os.getenv("DEMO_TEACHER_USERNAME", "professor")
+DEMO_TEACHER_EMAIL = os.getenv("DEMO_TEACHER_EMAIL", "professor@astercoach.app")
+DEMO_TEACHER_PASSWORD = os.getenv("DEMO_TEACHER_PASSWORD", "aster123")
+DEMO_ADMIN_USERNAME = os.getenv("DEMO_ADMIN_USERNAME", "admin")
+DEMO_ADMIN_EMAIL = os.getenv("DEMO_ADMIN_EMAIL", "admin@astercoach.app")
+DEMO_ADMIN_PASSWORD = os.getenv("DEMO_ADMIN_PASSWORD", "aster123")
 
 EXERCISES = [
     {"public_id": "e1", "name": "Agachamento com peso corporal", "sets": 3, "reps": "12", "rest_seconds": 45, "tip": "Desça até as coxas ficarem quase paralelas ao chão e empurre o chão com o pé inteiro.", "focus": "Pernas", "place": "Ambos"},
@@ -80,7 +87,7 @@ HISTORY = [
 
 
 class Command(BaseCommand):
-    help = "Popula o banco com dados demo do Nina Coach"
+    help = "Popula o banco com dados demo do Aster Coach"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -111,12 +118,12 @@ class Command(BaseCommand):
             Instructor.objects.all().delete()
 
         # Conta demo: aluno por omissão (sem promoção automática a admin).
-        # Para gestão: python manage.py promote_admin fabiano
+        # Para gestão: python manage.py promote_admin aluno
         user, created = User.objects.get_or_create(
             username=DEMO_USERNAME,
             defaults={
                 "email": DEMO_EMAIL,
-                "name": "Fabiano",
+                "name": "Alex",
                 "avatar_initials": "FF",
                 "streak_days": 4,
                 "plan": User.Plan.COMPLETO,
@@ -133,17 +140,57 @@ class Command(BaseCommand):
             user.save()
         else:
             user.email = DEMO_EMAIL
-            user.name = "Fabiano"
-            user.avatar_initials = "FF"
+            user.name = "Alex"
+            user.avatar_initials = "AL"
             user.streak_days = 4
             user.plan = User.Plan.COMPLETO
             user.onboarded = True
             user.is_superuser = False
             user.save()
+
+        teacher, _ = User.objects.get_or_create(
+            username=DEMO_TEACHER_USERNAME,
+            defaults={
+                "email": DEMO_TEACHER_EMAIL,
+                "name": "Prof. Aster",
+                "avatar_initials": "PA",
+                "streak_days": 12,
+                "plan": User.Plan.COMPLETO,
+                "role": User.Role.TEACHER,
+                "onboarded": True,
+                "is_staff": False,
+                "is_superuser": False,
+            },
+        )
+        teacher.set_password(DEMO_TEACHER_PASSWORD)
+        teacher.role = User.Role.TEACHER
+        teacher.onboarded = True
+        teacher.save()
+
+        admin, _ = User.objects.get_or_create(
+            username=DEMO_ADMIN_USERNAME,
+            defaults={
+                "email": DEMO_ADMIN_EMAIL,
+                "name": "Admin Aster",
+                "avatar_initials": "AA",
+                "streak_days": 18,
+                "plan": User.Plan.COMPLETO,
+                "role": User.Role.ADMIN,
+                "onboarded": True,
+                "is_staff": True,
+                "is_superuser": False,
+            },
+        )
+        admin.set_password(DEMO_ADMIN_PASSWORD)
+        admin.role = User.Role.ADMIN
+        admin.onboarded = True
+        admin.save()
+
         self.stdout.write(
             self.style.WARNING(
-                f"Demo aluno: {DEMO_USERNAME} (credenciais via env em DEBUG). "
-                f"Admin: promote_admin {DEMO_USERNAME} — não use em produção."
+                f"Demo aluno: {DEMO_USERNAME} / {DEMO_PASSWORD}. "
+                f"Demo professor: {DEMO_TEACHER_USERNAME} / {DEMO_TEACHER_PASSWORD}. "
+                f"Demo admin: {DEMO_ADMIN_USERNAME} / {DEMO_ADMIN_PASSWORD}."
             )
         )
 
@@ -164,8 +211,8 @@ class Command(BaseCommand):
         SiteSettings.objects.update_or_create(
             pk=1,
             defaults={
-                "brand_name": "Nina Coach",
-                "nina_avatar_note": "Nina · IA de treino",
+                "brand_name": "Aster Coach",
+                "nina_avatar_note": "Aster · IA de treino",
             },
         )
 
@@ -302,7 +349,7 @@ class Command(BaseCommand):
         notifications = [
             {"public_id": "n1", "title": "Treino de hoje", "body": "Funcional em casa está pronto para começar.", "time_label": "há 1 h", "read": False},
             {"public_id": "n2", "title": "Aula às 19h", "body": "Força em casa sem pressa ainda tem vagas.", "time_label": "há 3 h", "read": False},
-            {"public_id": "n3", "title": "Nina", "body": "Ontem foi pernas. Hoje, mobilidade pode equilibrar a semana.", "time_label": "ontem", "read": True},
+            {"public_id": "n3", "title": "Aster", "body": "Ontem foi pernas. Hoje, mobilidade pode equilibrar a semana.", "time_label": "ontem", "read": True},
         ]
         for n in notifications:
             Notification.objects.update_or_create(
@@ -334,5 +381,7 @@ class Command(BaseCommand):
         ChatThread.objects.get_or_create(user=user)
 
         self.stdout.write(self.style.SUCCESS("Seed concluído."))
-        self.stdout.write("Usuário: fabiano / senha: forma123")
-        self.stdout.write("POST /api/auth/token/  {\"username\":\"fabiano\",\"password\":\"forma123\"}")
+        self.stdout.write(f"Usuário aluno: {DEMO_USERNAME} / {DEMO_PASSWORD}")
+        self.stdout.write(f"Usuário professor: {DEMO_TEACHER_USERNAME} / {DEMO_TEACHER_PASSWORD}")
+        self.stdout.write(f"Usuário admin: {DEMO_ADMIN_USERNAME} / {DEMO_ADMIN_PASSWORD}")
+        self.stdout.write(f"POST /api/auth/token/  {{\"username\":\"{DEMO_USERNAME}\",\"password\":\"{DEMO_PASSWORD}\"}}")

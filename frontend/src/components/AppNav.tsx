@@ -23,11 +23,11 @@ type NavItem = {
 
 function studentItems(): NavItem[] {
   return [
-    { to: "/", label: "Início", icon: House, end: true },
+    { to: "/dashboard", label: "Início", icon: House, end: true },
     { to: "/treinos", label: "Treinos", icon: Activity },
     { to: "/ao-vivo", label: "Ao vivo", icon: CalendarDays },
     { to: "/progresso", label: "Progresso", icon: TrendingUp },
-    { to: "/nina", label: "Nina IA", icon: Sparkles },
+    { to: "/nina", label: "Aster IA", icon: Sparkles },
     { to: "/perfil", label: "Perfil", icon: UserRound },
   ];
 }
@@ -75,8 +75,8 @@ export function AppSidebar() {
     >
       <div className={cn("border-b px-5 py-6", isDark ? "border-[#2d312f]" : "border-[#efe2d8]")}>
         <div className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[linear-gradient(135deg,#dba07e_0%,#be6b4c_52%,#8d4938_100%)] text-sm font-bold text-white shadow-[0_16px_30px_rgba(191,105,73,0.35)]">
-            F
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[linear-gradient(135deg,#0f172a_0%,#1d4d63_40%,#4caea8_100%)] text-sm font-bold text-white shadow-[0_16px_30px_rgba(15,23,42,0.22)]">
+            AC
           </div>
           <div>
             <p
@@ -93,7 +93,7 @@ export function AppSidebar() {
                 isDark ? "text-[#b8b0a6]" : "text-[#7b806e]",
               )}
             >
-              Wellness studio
+              Acompanhamento inteligente
             </p>
           </div>
         </div>

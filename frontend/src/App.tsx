@@ -82,6 +82,9 @@ const LandingPage = lazy(() =>
 const LoginPage = lazy(() =>
   import("@/pages/LoginPage").then((m) => ({ default: m.LoginPage })),
 );
+const SignupPage = lazy(() =>
+  import("@/pages/SignupPage").then((m) => ({ default: m.SignupPage })),
+);
 const ManagementLoginPage = lazy(() =>
   import("@/pages/admin/ManagementLoginPage").then((m) => ({
     default: m.ManagementLoginPage,
@@ -111,7 +114,7 @@ function ProtectedApp() {
   if (authChecking) {
     return (
       <div className="grid min-h-screen place-items-center text-sm text-[#5e655f]">
-        Conectando à Nina Coach…
+        Conectando à Aster Coach…
       </div>
     );
   }
@@ -136,10 +139,35 @@ function ProtectedApp() {
   return <Outlet />;
 }
 
+function RootGate() {
+  const { authenticated, authChecking, user, onboarded } = useApp();
+
+  if (authChecking) {
+    return (
+      <div className="grid min-h-screen place-items-center text-sm text-[#5e655f]">
+        Preparando sua sessão…
+      </div>
+    );
+  }
+
+  if (!authenticated) {
+    return <LandingPage />;
+  }
+
+  if (user.role === "student" && !onboarded) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  return <Navigate to={homePathForUser(user)} replace />;
+}
+
 function RoleHome() {
-  const { user } = useApp();
+  const { user, onboarded } = useApp();
   if (isPlatformAdmin(user) || isTeacher(user)) {
     return <Navigate to={homePathForUser(user)} replace />;
+  }
+  if (!onboarded) {
+    return <Navigate to="/onboarding" replace />;
   }
   return <DashboardPage />;
 }
@@ -148,13 +176,13 @@ function RequireAdmin({ children }: { children: ReactNode }) {
   const { user } = useApp();
   if (isPlatformAdmin(user)) return <>{children}</>;
   if (isTeacher(user)) return <Navigate to="/professor" replace />;
-  return <Navigate to="/" replace />;
+  return <Navigate to="/dashboard" replace />;
 }
 
 function RequireTeacher({ children }: { children: ReactNode }) {
   const { user } = useApp();
   if (isTeacher(user) || isPlatformAdmin(user)) return <>{children}</>;
-  return <Navigate to="/" replace />;
+  return <Navigate to="/dashboard" replace />;
 }
 
 function RequireStudentArea({ children }: { children: ReactNode }) {
@@ -172,15 +200,17 @@ export default function App() {
       <BrowserRouter>
         <Suspense fallback={<PageFallback />}>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<RootGate />} />
             <Route path="/landing" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/cadastro" element={<SignupPage />} />
             <Route path="/admin/login" element={<ManagementLoginPage />} />
             <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
             <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
             <Route element={<ProtectedApp />}>
               <Route element={<AppLayout />}>
-                <Route path="/" element={<RoleHome />} />
+                <Route path="/dashboard" element={<RoleHome />} />
                 <Route
                   path="/onboarding"
                   element={
@@ -301,7 +331,7 @@ export default function App() {
                     </RequireAdmin>
                   }
                 />
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Route>
             </Route>
           </Routes>

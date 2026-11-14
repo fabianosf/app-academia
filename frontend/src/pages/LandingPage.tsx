@@ -10,16 +10,16 @@ const metrics = [
 ];
 
 const valuePoints = [
-  "Treino adaptado ao seu nível e tempo disponível.",
-  "Foco em consistência, nem em excesso de informação.",
-  "Orientação prática para evoluir sem virar rotina pesada.",
+  "Treino adaptado ao seu nível e ao tempo disponível.",
+  "Ritmo consistente sem excesso de informação.",
+  "Orientação prática para evoluir sem tornar a rotina pesada.",
 ];
 
 const benefits = [
   {
     icon: BrainCircuit,
     title: "IA que entende seu objetivo",
-    description: "Nina monta a rotina com base no seu nível, tempo disponível e evolução real.",
+    description: "Aster cria a rotina com base no seu nível, no tempo disponível e na evolução real.",
   },
   {
     icon: Dumbbell,
@@ -35,21 +35,21 @@ const benefits = [
 
 const steps = [
   "Você informa objetivo, nível e disponibilidade.",
-  "Nina ajusta treino e orientação com base no contexto.",
+  "Aster ajusta o treino e a orientação com base no contexto.",
   "Você evolui com rotina clara e acompanhamento contínuo.",
 ];
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_10%_0%,rgba(29,183,184,0.18),transparent_18%),radial-gradient(circle_at_90%_10%,rgba(6,28,43,0.18),transparent_20%),linear-gradient(180deg,#f7f9fb_0%,#eef3f5_100%)] text-slate-900">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_10%_0%,rgba(19,120,130,0.12),transparent_18%),radial-gradient(circle_at_90%_10%,rgba(185,146,106,0.12),transparent_20%),linear-gradient(180deg,#f8f5f1_0%,#f2eee9_100%)] text-slate-900">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 lg:px-8">
         <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[linear-gradient(135deg,#061C2B_0%,#1DB7B8_100%)] text-sm font-bold text-white shadow-[0_20px_32px_rgba(6,28,43,0.2)]">
-            NC
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[linear-gradient(135deg,#0b1a1d_0%,#184a5d_35%,#3bb7b2_100%)] text-sm font-bold text-white shadow-[0_20px_36px_rgba(11,26,29,0.22)]">
+            AC
           </div>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">Nina Coach</p>
-            <p className="font-display text-lg font-semibold text-slate-900">Treinar com inteligência.</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">Aster Coach</p>
+            <p className="font-display text-lg font-semibold text-slate-900">Treinar com clareza.</p>
           </div>
         </div>
 
@@ -61,12 +61,12 @@ export function LandingPage() {
 
         <div className="flex items-center gap-2">
           <Link to="/login">
-            <Button variant="secondary" className="rounded-xl border-slate-200 bg-white/70 text-slate-700 shadow-sm hover:bg-white">
+            <Button variant="secondary" className="rounded-xl border-slate-200 bg-white/80 text-slate-700 shadow-sm hover:bg-white">
               Entrar
             </Button>
           </Link>
-          <Link to="/login">
-            <Button className="rounded-xl bg-[linear-gradient(135deg,#061C2B_0%,#1DB7B8_100%)] text-white shadow-[0_18px_36px_rgba(13,99,104,0.25)]">
+          <Link to="/signup">
+            <Button className="rounded-xl shadow-[0_18px_36px_rgba(18,71,80,0.22)]">
               Começar agora
             </Button>
           </Link>
@@ -80,31 +80,31 @@ export function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: "easeOut" }}
           >
-            <Badge tone="neutral" className="border border-[#dfe9ee] bg-white/80 text-slate-700">
+            <Badge tone="neutral" className="border border-[#dfe9ee] bg-white/80 text-slate-700 shadow-sm">
               IA de treino & acompanhamento
             </Badge>
 
             <h1 className="mt-6 max-w-xl font-display text-5xl leading-[0.95] tracking-[-0.06em] text-slate-950 md:text-6xl">
-              Treinar com inteligência.
+              Treinar com clareza, disciplina e sofisticação.
             </h1>
 
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-600">
-              Nina Coach é sua assistente de treino pensada para acompanhar seu progresso com clareza, personalização e consistência.
+              Aster Coach combina rotina inteligente, acompanhamento real e orientação premium para transformar o fitness em uma experiência mais consistente e elegante.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link to="/login">
-                <Button className="rounded-xl bg-[linear-gradient(135deg,#061C2B_0%,#1DB7B8_100%)] px-5 py-3 text-sm text-white shadow-[0_18px_32px_rgba(13,99,104,0.25)]">
+              <Link to="/signup">
+                <Button className="rounded-xl px-5 py-3 text-sm shadow-[0_18px_32px_rgba(13,99,104,0.25)]">
                   Começar agora
                   <ArrowRight size={16} />
                 </Button>
               </Link>
-              <Link to="/landing#como-funciona">
+              <a href="#como-funciona">
                 <Button variant="secondary" className="rounded-xl border-slate-200 bg-white/80 px-5 py-3 text-sm text-slate-700 shadow-sm">
                   <PlayCircle size={16} />
                   Ver como funciona
                 </Button>
-              </Link>
+              </a>
             </div>
 
             <div className="mt-8 flex flex-wrap items-center gap-4 text-sm text-slate-500">
@@ -123,7 +123,7 @@ export function LandingPage() {
             transition={{ duration: 0.45, ease: "easeOut", delay: 0.08 }}
             className="relative"
           >
-            <Card className="relative overflow-hidden border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.88)_0%,rgba(242,248,250,0.96)_100%)] p-5 shadow-[0_32px_64px_rgba(8,33,42,0.12)]">
+            <Card className="relative overflow-hidden border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.92)_0%,rgba(239,247,247,0.98)_100%)] p-5 shadow-[0_34px_68px_rgba(12,33,40,0.12)]">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Resumo do dia</p>
@@ -154,8 +154,8 @@ export function LandingPage() {
                   ))}
                 </div>
 
-                <div className="rounded-2xl bg-[linear-gradient(135deg,#061C2B_0%,#0d2f42_35%,#1DB7B8_100%)] p-4 text-white shadow-[0_20px_32px_rgba(6,28,43,0.2)]">
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-cyan-100">Nina recomendou</p>
+                <div className="rounded-2xl bg-[linear-gradient(135deg,#0b1d24_0%,#123f4e_35%,#1fb6b0_100%)] p-4 text-white shadow-[0_22px_34px_rgba(6,28,43,0.22)]">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-cyan-100">Aster recomendou</p>
                   <p className="mt-3 font-display text-2xl">Treino de força + mobilidade</p>
                   <p className="mt-2 text-sm text-cyan-50">Ajustado ao seu ritmo para melhorar consistência e reduzir esforço desnecessário.</p>
                 </div>
@@ -186,10 +186,10 @@ export function LandingPage() {
 
         <section id="beneficios" className="mt-24">
           <div className="mx-auto max-w-2xl text-center">
-            <Badge tone="neutral" className="border border-slate-200 bg-white/70 text-slate-700">
+            <Badge tone="neutral" className="border border-slate-200 bg-white/80 text-slate-700 shadow-sm">
               Benefícios
             </Badge>
-            <h2 className="mt-5 font-display text-4xl text-slate-950">Tudo o que você precisa para evoluir.</h2>
+            <h2 className="mt-5 font-display text-4xl text-slate-950">Tudo o que você precisa para evoluir sem ruído.</h2>
           </div>
 
           <div className="mt-10 grid gap-5 md:grid-cols-3">
@@ -207,7 +207,7 @@ export function LandingPage() {
 
         <section id="como-funciona" className="mt-24">
           <div className="mx-auto max-w-2xl text-center">
-            <Badge tone="neutral" className="border border-slate-200 bg-white/70 text-slate-700">
+            <Badge tone="neutral" className="border border-slate-200 bg-white/80 text-slate-700 shadow-sm">
               Como funciona
             </Badge>
             <h2 className="mt-5 font-display text-4xl text-slate-950">Clareza, rotina e evolução sem ruído.</h2>
@@ -226,7 +226,7 @@ export function LandingPage() {
         </section>
 
         <section id="diferenciais" className="mt-24">
-          <Card className="border border-slate-200 bg-[linear-gradient(135deg,rgba(6,28,43,0.96)_0%,rgba(15,63,71,0.96)_50%,rgba(29,183,184,0.92)_100%)] p-8 text-white shadow-[0_30px_54px_rgba(6,28,43,0.18)] md:p-10">
+          <Card className="border border-slate-200 bg-[linear-gradient(135deg,rgba(7,20,24,0.96)_0%,rgba(12,59,68,0.96)_45%,rgba(23,168,170,0.92)_100%)] p-8 text-white shadow-[0_32px_64px_rgba(7,20,24,0.2)] md:p-10">
             <div className="grid gap-8 md:grid-cols-[1fr_0.9fr] md:items-center">
               <div>
                 <Badge tone="neutral" className="border border-white/10 bg-white/10 text-cyan-100">
@@ -234,7 +234,7 @@ export function LandingPage() {
                 </Badge>
                 <h2 className="mt-5 font-display text-4xl leading-tight text-white">Mais inteligência. Mais consistência. Mais resultado.</h2>
                 <p className="mt-4 max-w-xl text-base leading-relaxed text-cyan-50/90">
-                  Nina Coach combina orientação prática, clareza de rotina e acompanhamento inteligente para transformar o treino em uma experiência mais eficiente e sustentável.
+                  Aster Coach combina orientação prática, clareza de rotina e acompanhamento inteligente para transformar o treino em uma experiência mais eficiente e sustentável.
                 </p>
               </div>
 
@@ -260,13 +260,13 @@ export function LandingPage() {
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[linear-gradient(135deg,#061C2B_0%,#1DB7B8_100%)] text-white shadow-[0_18px_32px_rgba(13,99,104,0.18)]">
               <Sparkles size={18} />
             </div>
-            <h2 className="mt-5 font-display text-4xl text-slate-950">Comece a evoluir com Nina Coach.</h2>
+            <h2 className="mt-5 font-display text-4xl text-slate-950">Comece a evoluir com Aster Coach.</h2>
             <p className="mx-auto mt-3 max-w-xl text-base text-slate-600">
               Uma rotina mais inteligente para você treinar melhor, com foco e consistência.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <Link to="/login">
-                <Button className="rounded-xl bg-[linear-gradient(135deg,#061C2B_0%,#1DB7B8_100%)] px-5 py-3 text-sm text-white shadow-[0_18px_32px_rgba(13,99,104,0.22)]">
+              <Link to="/signup">
+                <Button className="rounded-xl px-5 py-3 text-sm shadow-[0_18px_32px_rgba(13,99,104,0.22)]">
                   Começar agora
                 </Button>
               </Link>
@@ -282,7 +282,7 @@ export function LandingPage() {
         <footer className="mt-10 border-t border-slate-200/80 pt-6 pb-2 text-center text-sm text-slate-500">
           <div className="flex items-center justify-center gap-3">
             <span className="grid h-8 w-8 place-items-center rounded-xl bg-[linear-gradient(135deg,#061C2B_0%,#1DB7B8_100%)] text-[10px] font-bold text-white">NC</span>
-            <span>Nina Coach</span>
+            <span>Aster Coach</span>
           </div>
           <p className="mt-3">Seu treino guiado por inteligência.</p>
         </footer>

@@ -28,7 +28,7 @@ export function ManagementLoginPage() {
     if (isManagementUser(user)) {
       return <Navigate to={homePathForUser(user)} replace />;
     }
-    return <Navigate to="/" replace />;
+    return <Navigate to={homePathForUser(user)} replace />;
   }
 
   const onSubmit = async (e: FormEvent) => {
@@ -165,9 +165,11 @@ export function ManagementLoginPage() {
 
       {import.meta.env.DEV && (
         <p className="mt-4 rounded-2xl border border-[#eadfdb] bg-[#faf7f4] px-3 py-3 text-xs leading-relaxed text-[#5e655f]">
-          Local: <span className="font-semibold text-[#31403a]">admin</span> ou{" "}
-          <span className="font-semibold text-[#31403a]">professor</span> /{" "}
-          <span className="font-semibold text-[#31403a]">forma123</span>
+          Demo local: <span className="font-semibold text-[#31403a]">professor / aster123</span>
+          <span className="mx-1">•</span>
+          <span className="font-semibold text-[#31403a]">admin / aster123</span>
+          <span className="mx-1">•</span>
+          <span className="font-semibold text-[#31403a]">aluno / aster123</span>
         </p>
       )}
     </AuthLayout>

@@ -55,7 +55,7 @@ export function ExerciseListItem({ exercise, onHelp }: { exercise: Exercise; onH
         <p className="mt-1 text-sm text-stone-600">{exercise.tip}</p>
         <div className="mt-2 flex flex-wrap gap-2">
           <Button variant="secondary" className="px-3 py-1.5 text-xs" onClick={onHelp}>Como executar</Button>
-          <Link to="/nina"><Button variant="ghost" className="px-3 py-1.5 text-xs">Pedir ajuda à Nina</Button></Link>
+          <Link to="/nina"><Button variant="ghost" className="px-3 py-1.5 text-xs">Pedir ajuda à Aster</Button></Link>
         </div>
       </div>
     </li>

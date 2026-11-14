@@ -1,4 +1,4 @@
-# Nina Coach
+# Aster Coach
 
 Aplicativo fitness (PT-BR) com frontend React e backend Django REST + JWT.
 
@@ -21,17 +21,17 @@ python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python manage.py migrate
-cp .env.example .env   # defina OPENAI_API_KEY para a Nina
+cp .env.example .env   # defina OPENAI_API_KEY para o Aster
 python manage.py seed_demo   # só com DJANGO_DEBUG=true; cria aluno demo (não admin)
-python manage.py promote_admin fabiano   # opcional: promove a role=admin + is_staff
+python manage.py promote_admin aluno   # opcional: promove a role=admin + is_staff
 python manage.py runserver 8000
 ```
 
 > Segurança: `seed_demo` aborta se `DEBUG=false`. Credenciais demo são só para ambiente local. Em produção use `DJANGO_DEBUG=false`, `DJANGO_SECRET_KEY` forte e `DJANGO_ALLOWED_HOSTS` explícitos. `is_staff` Django ≠ papel de professor; ver `docs/PAPEIS_E_ADMIN.md`.
 
-### Nina (cérebro ANS + LLM)
+### Aster (cérebro ANS + LLM)
 
-A Nina usa o arquivo `Academia_Nutrição_Saúde v1.0` como system prompt via API OpenAI-compatível.
+O Aster usa o arquivo `Academia_Nutrição_Saúde v1.0` como system prompt via API OpenAI-compatível.
 
 No `backend/.env`:
 
@@ -44,14 +44,20 @@ OPENAI_MODEL=gpt-4o-mini                    # opcional
 Hash ativado em toda pergunta:
 `###ΩΨΧ.ANS.ACADEMIA.NUTRICAO.SAUDE.v1.0.ALPHALANG.NATIVE.35BLOCOS.∇∆∞.20260424.ΨΧΩMASTER###`
 
-Usuário demo (aluno): `fabiano` / `forma123`. Para gestão: `python manage.py promote_admin fabiano`.
+Credenciais locais de demonstração:
+
+- Aluno: `aluno` / `aster123`
+- Professor: `professor` / `aster123`
+- Admin: `admin` / `aster123`
+
+Essas contas são criadas pelo `seed_demo` em DEBUG local para validar o fluxo por role sem depender de promoção manual.
 
 ### Auth JWT
 
 ```bash
 curl -X POST http://127.0.0.1:8000/api/auth/token/ \
   -H 'Content-Type: application/json' \
-  -d '{"username":"fabiano","password":"forma123"}'
+  -d '{"username":"aluno","password":"aster123"}'
 ```
 
 A sessão usa cookies **HttpOnly** (`forma_access` / `forma_refresh`). O frontend chama a API com `credentials: "include"` (via proxy `/api`). Logout: `POST /api/auth/logout/`.
@@ -85,7 +91,7 @@ npm run dev
 
 Abra **https://localhost:5173** (plugin `basic-ssl`; HTTP em `:5173` não serve a UI). O Vite faz proxy de `/api` para `http://127.0.0.1:8000`.
 
-No boot, se não houver sessão JWT, o app abre `/login` (aluno). Conta demo aluno: `fabiano` / `forma123`. Gestão: `/admin/login` (professores e administradores; o papel vem do backend — use `promote_admin`).
+No boot, se não houver sessão JWT, o app abre `/login` (aluno). Conta demo aluno: `aluno` / `aster123`. Gestão: `/admin/login` (professores e administradores; o papel vem do backend — use `promote_admin`).
 
 Rotas de autenticação: `/login`, `/admin/login`, `/esqueci-senha`, `/redefinir-senha`. Ver `docs/PAPEIS_E_ADMIN.md`.
 

@@ -1,4 +1,4 @@
-"""Django settings for Nina Coach API."""
+"""Django settings for Aster Coach API."""
 
 import os
 import secrets
@@ -206,13 +206,26 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@formacomfabiano.local")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@astercoach.app")
 EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
 )
 
-# Nina / ANS LLM (OpenAI-compatible)
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+# Aster / ANS LLM (OpenAI-compatible)
+_OPENAI_API_KEY_PRIMARY = os.getenv("OPENAI_API_KEY", "").strip()
+_OPENAI_API_KEYS = [
+    key.strip()
+    for key in os.getenv("OPENAI_API_KEYS", "").split(",")
+    if key.strip()
+]
+for idx in range(1, 11):
+    fallback_key = os.getenv(f"OPENAI_API_KEY_{idx}", "").strip()
+    if fallback_key and fallback_key not in _OPENAI_API_KEYS:
+        _OPENAI_API_KEYS.append(fallback_key)
+if _OPENAI_API_KEY_PRIMARY and _OPENAI_API_KEY_PRIMARY not in _OPENAI_API_KEYS:
+    _OPENAI_API_KEYS.insert(0, _OPENAI_API_KEY_PRIMARY)
+OPENAI_API_KEY = _OPENAI_API_KEYS[0] if _OPENAI_API_KEYS else ""
+OPENAI_API_KEYS = _OPENAI_API_KEYS
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 ANS_KNOWLEDGE_PATH = BASE_DIR / "assistant" / "knowledge" / "ans_academia_nutricao_saude_v1.md"

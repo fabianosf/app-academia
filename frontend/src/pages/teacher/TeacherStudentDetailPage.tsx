@@ -122,7 +122,7 @@ export function TeacherStudentDetailPage() {
         </>
       )}
       <SafetyNotice>
-        Limitaciones físicas e conversas com a Nina não estão disponíveis neste painel.
+        Limitações físicas e conversas com a Aster não estão disponíveis neste painel.
       </SafetyNotice>
     </div>
   );

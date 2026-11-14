@@ -26,7 +26,7 @@ export function OnboardingPage() {
   const finish = () => {
     setProfile(draft);
     setOnboarded(true);
-    navigate("/");
+    navigate("/dashboard", { replace: true });
   };
 
   return (

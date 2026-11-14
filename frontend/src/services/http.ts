@@ -3,8 +3,8 @@ const API_BASE = import.meta.env.VITE_API_URL ?? "/api";
 /** Limpa tokens legados em localStorage (migração para cookies HttpOnly). */
 export function clearTokens() {
   try {
-    localStorage.removeItem("forma-access");
-    localStorage.removeItem("forma-refresh");
+    localStorage.removeItem("aster-access");
+    localStorage.removeItem("aster-refresh");
   } catch {
     /* ignore */
   }

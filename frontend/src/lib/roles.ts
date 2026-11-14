@@ -17,7 +17,7 @@ export function homePathForUser(
 ): string {
   if (isPlatformAdmin(user)) return "/admin";
   if (isTeacher(user)) return "/professor";
-  return "/";
+  return "/dashboard";
 }
 
 export function roleLabel(role?: UserRole | string): string {

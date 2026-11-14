@@ -5,7 +5,7 @@ import { AppHeader } from "@/components/ShellBits";
 
 export function AppLayout() {
   return (
-    <div className="flex min-h-screen bg-transparent text-foreground">
+    <div className="flex min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(32,123,132,0.14),transparent_20%),radial-gradient(circle_at_bottom_right,rgba(181,140,96,0.12),transparent_24%),linear-gradient(180deg,#f7f4f0_0%,#f0ece6_100%)] text-foreground">
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <AppHeader />

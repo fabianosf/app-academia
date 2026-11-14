@@ -11,7 +11,7 @@ export function AppHeader() {
   const hello = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
 
   return (
-    <header className={isDark ? "sticky top-0 z-30 border-b border-[#2d312f] bg-[rgba(18,20,19,0.76)] px-4 py-3 backdrop-blur-xl md:px-8" : "sticky top-0 z-30 border-b border-[#eae0d9] bg-[rgba(245,240,234,0.78)] px-4 py-3 backdrop-blur-xl md:px-8"}>
+    <header className={isDark ? "sticky top-0 z-30 border-b border-[#2c3533] bg-[rgba(12,17,18,0.8)] px-4 py-3 shadow-[0_16px_40px_rgba(8,11,12,0.16)] backdrop-blur-xl md:px-8" : "sticky top-0 z-30 border-b border-[#eaded5] bg-[rgba(249,245,240,0.8)] px-4 py-3 shadow-[0_14px_30px_rgba(28,31,31,0.05)] backdrop-blur-xl md:px-8"}>
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         <div>
           <p className={isDark ? "text-[10px] uppercase tracking-[0.22em] text-[#b9b0a6] md:hidden" : "text-[10px] uppercase tracking-[0.22em] text-[#7b857d] md:hidden"}>{brand}</p>
@@ -19,8 +19,8 @@ export function AppHeader() {
           <p className={isDark ? "text-xs text-[#c1b9b1]" : "text-xs text-[#66706a]"}>{user.streakDays} dias em movimento</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link to="/nina" className={isDark ? "hidden items-center gap-2 rounded-xl border border-[#a86645]/40 bg-[linear-gradient(135deg,#f8eae1_0%,#f1d6c4_100%)] px-3 py-2 text-sm font-semibold text-[#8b4838] shadow-[0_12px_24px_rgba(168,102,69,0.18)] transition-all hover:-translate-y-0.5 hover:shadow-[0_16px_24px_rgba(168,102,69,0.24)] sm:inline-flex" : "hidden items-center gap-2 rounded-xl border border-[#f0d8cb] bg-[#fff5f1] px-3 py-2 text-sm font-semibold text-[#b1603d] shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#fce9e0] sm:inline-flex"} aria-label="Atalho para a Nina">
-            <Sparkles size={16} /> Nina
+          <Link to="/nina" className={isDark ? "hidden items-center gap-2 rounded-xl border border-[#5caeab]/30 bg-[linear-gradient(135deg,#dff5f3_0%,#cfe8e6_100%)] px-3 py-2 text-sm font-semibold text-[#134c52] shadow-[0_12px_24px_rgba(26,111,118,0.18)] transition-all hover:-translate-y-0.5 hover:shadow-[0_16px_24px_rgba(26,111,118,0.25)] sm:inline-flex" : "hidden items-center gap-2 rounded-xl border border-[#d6e9e4] bg-[linear-gradient(135deg,#edf9f8_0%,#e1f3f1_100%)] px-3 py-2 text-sm font-semibold text-[#14515a] shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#e6fbf9] sm:inline-flex"} aria-label="Atalho para a Aster">
+            <Sparkles size={16} /> Aster
           </Link>
           <button
             type="button"

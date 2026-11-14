@@ -208,6 +208,13 @@ export function AdminPage() {
         )}
       </section>
 
+      <section className="grid gap-3 md:grid-cols-4">
+        <SummaryCard label="Treinos" value={String(workouts.length)} tone="amber" />
+        <SummaryCard label="Exercícios" value={String(exercises.length)} tone="slate" />
+        <SummaryCard label="Aulas live" value={String(liveClasses.length)} tone="green" />
+        <SummaryCard label="Brand" value={brand} tone="rose" />
+      </section>
+
       <section className="grid gap-3 rounded-2xl border border-stone-200 bg-white p-4 md:grid-cols-2">
         <label className="text-sm">
           Nome da marca
@@ -223,7 +230,7 @@ export function AdminPage() {
           />
         </label>
         <label className="text-sm md:col-span-2">
-          Avatar da Nina
+          Avatar da Aster
           <Input className="mt-1" value={ninaNote} onChange={(e) => setNinaNote(e.target.value)} />
         </label>
         <div className="md:col-span-2">
@@ -283,12 +290,36 @@ export function AdminPage() {
           <li className="rounded-xl bg-emerald-50 p-3 text-emerald-900">
             Auth JWT (cookies) · ativo
           </li>
-          <li className="rounded-xl bg-emerald-50 p-3 text-emerald-900">Nina / demos · ativo</li>
+          <li className="rounded-xl bg-emerald-50 p-3 text-emerald-900">Aster / demos · ativo</li>
           <li className="rounded-xl bg-amber-50 p-3 text-amber-950">
             Pesquisa web / vídeo avatar · ver docs/INTEGRACOES_ASSISTENTE.md
           </li>
         </ul>
       </section>
+    </div>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: "amber" | "slate" | "green" | "rose";
+}) {
+  const tones = {
+    amber: "bg-amber-50 text-amber-900 border-amber-200",
+    slate: "bg-slate-100 text-slate-800 border-slate-200",
+    green: "bg-emerald-50 text-emerald-900 border-emerald-200",
+    rose: "bg-rose-50 text-rose-900 border-rose-200",
+  };
+
+  return (
+    <div className={`rounded-2xl border p-4 ${tones[tone]}`}>
+      <p className="text-[11px] uppercase tracking-[0.18em]">{label}</p>
+      <p className="mt-3 font-display text-3xl font-semibold leading-none">{value}</p>
     </div>
   );
 }

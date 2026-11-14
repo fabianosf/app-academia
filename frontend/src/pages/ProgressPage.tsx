@@ -9,6 +9,7 @@ export function ProgressPage() {
     history,
     loadLog,
     muscleProgress,
+    profile,
     weeklyFrequency,
     workouts,
     user,
@@ -16,10 +17,19 @@ export function ProgressPage() {
   const empty = history.length === 0;
   const minutes = history.reduce((s, h) => s + h.minutes, 0);
   const kcal = history.reduce((s, h) => s + h.calories, 0);
+  const totalPlanned = weeklyFrequency.reduce((sum, item) => sum + item.minutos, 0);
+  const avgTime = history.length > 0 ? Math.round(minutes / history.length) : 0;
+  const focusProgress = Math.min(100, Math.round((user.streakDays / Math.max(profile.weeklyFrequency, 1)) * 100));
+
   return (
     <div className="space-y-6">
       <PageHeader title="Progresso" subtitle="Consistência conta mais do que um treino perfeito." />
-      {empty ? <EmptyState title="Seu histórico começa no primeiro treino" text="Quando você concluir uma sessão, minutos, sequência e metas aparecem aqui." /> : (
+      {empty ? (
+        <EmptyState
+          title="Seu histórico começa no primeiro treino"
+          text="Quando você concluir uma sessão, minutos, sequência e metas aparecem aqui."
+        />
+      ) : (
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard label="Treinos no mês" value={String(history.length)} hint="meta 12" />
@@ -27,6 +37,25 @@ export function ProgressPage() {
             <StatCard label="Sequência atual" value={`${user.streakDays} dias`} />
             <StatCard label="Calorias estimadas" value={String(kcal)} />
           </div>
+
+          <section className="grid gap-3 md:grid-cols-3">
+            <div className="rounded-2xl border border-[#d8dfdb] bg-[linear-gradient(135deg,#f5fbf8_0%,#edf7f2_100%)] p-4">
+              <p className="text-[11px] uppercase tracking-[0.14em] text-[#4a5b52]">Foco atual</p>
+              <p className="mt-2 font-display text-2xl text-[#14322d]">{profile.goal}</p>
+              <p className="mt-1 text-sm text-[#4d5d58]">Você está em {focusProgress}% do ritmo semanal pretendido.</p>
+            </div>
+            <div className="rounded-2xl border border-[#e3dace] bg-[linear-gradient(135deg,#fffaf4_0%,#f9f1e8_100%)] p-4">
+              <p className="text-[11px] uppercase tracking-[0.14em] text-[#785d4f]">Média por sessão</p>
+              <p className="mt-2 font-display text-2xl text-[#3d2c25]">{avgTime} min</p>
+              <p className="mt-1 text-sm text-[#654f46]">Sustentável e consistente para evoluir sem excesso.</p>
+            </div>
+            <div className="rounded-2xl border border-[#dfe9ee] bg-[linear-gradient(135deg,#f5fbff_0%,#edf3f8_100%)] p-4">
+              <p className="text-[11px] uppercase tracking-[0.14em] text-[#3f5664]">Plano semanal</p>
+              <p className="mt-2 font-display text-2xl text-[#183544]">{totalPlanned} min</p>
+              <p className="mt-1 text-sm text-[#4a6370]">Seu programa atual foi desenhado para manter ritmo e recuperação.</p>
+            </div>
+          </section>
+
           <div className="grid gap-4 lg:grid-cols-2">
             <Chart title="Frequência semanal" dataKey="treinos" data={weeklyFrequency} />
             <Chart title="Minutos por dia" dataKey="minutos" data={weeklyFrequency} />

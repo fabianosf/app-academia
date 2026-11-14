@@ -51,6 +51,36 @@ import {
 
 type ThemeMode = "light" | "dark";
 
+type LocalDemoUser = {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  avatarInitials: string;
+  role: "student";
+  plan: "Essencial" | "Completo";
+  profile: UserProfile;
+  onboarded: boolean;
+  theme?: ThemeMode;
+};
+
+const DEMO_USERS_KEY = "aster-demo-users-v1";
+
+function readLocalDemoUsers(): LocalDemoUser[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(DEMO_USERS_KEY);
+    return raw ? (JSON.parse(raw) as LocalDemoUser[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeLocalDemoUsers(users: LocalDemoUser[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(DEMO_USERS_KEY, JSON.stringify(users));
+}
+
 interface AppState {
   authChecking: boolean;
   authenticated: boolean;
@@ -61,6 +91,7 @@ interface AppState {
     password: string,
     portal?: "student" | "management",
   ) => Promise<User>;
+  signUp: (name: string, email: string, password: string) => Promise<User>;
   signOut: () => void;
   user: User;
   profile: UserProfile;
@@ -143,8 +174,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [onboarded, setOnboarded] = useState(true);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [reservations, setReservations] = useState<ClassReservation[]>([]);
-  const [brand, setBrand] = useState("Nina Coach");
-  const [ninaNote, setNinaNote] = useState("Nina · IA de treino");
+  const [brand, setBrand] = useState("Aster Coach");
+  const [ninaNote, setNinaNote] = useState("Aster · IA de treino");
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [liveClasses, setLiveClasses] = useState<LiveClass[]>([]);
@@ -158,14 +189,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [muscleProgress, setMuscleProgress] = useState<ProgressSummary["muscleProgress"]>([]);
   const [theme, setTheme] = useState<ThemeMode>(() => {
     if (typeof window === "undefined") return "light";
-    const saved = window.localStorage.getItem("forma-theme");
+    const saved = window.localStorage.getItem("aster-theme");
     if (saved === "light" || saved === "dark") return saved;
     return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   });
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem("forma-theme", theme);
+    window.localStorage.setItem("aster-theme", theme);
   }, [theme]);
 
   const toast = useCallback((text: string) => {
@@ -243,6 +274,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const me = await tryRestoreSession();
         if (cancelled) return;
         if (!me) {
+          const localUser = readLocalDemoUsers().find((entry) => entry.email === window.localStorage.getItem("aster-current-user"));
+          if (localUser) {
+            setUser({
+              id: localUser.id,
+              name: localUser.name,
+              email: localUser.email,
+              avatarInitials: localUser.avatarInitials,
+              streakDays: 0,
+              plan: localUser.plan,
+              role: localUser.role,
+            });
+            setProfileState(localUser.profile);
+            setOnboarded(localUser.onboarded);
+            setAuthenticated(true);
+            setReady(true);
+            return;
+          }
           setAuthenticated(false);
           setReady(false);
           return;
@@ -274,7 +322,39 @@ export function AppProvider({ children }: { children: ReactNode }) {
       portal?: "student" | "management",
     ) => {
       setBootError(null);
-      await login(identifier, password, portal);
+
+      try {
+        await login(identifier, password, portal);
+      } catch (err) {
+        const matches = readLocalDemoUsers().find(
+          (entry) =>
+            (entry.email.toLowerCase() === identifier.toLowerCase() ||
+              entry.name.toLowerCase() === identifier.toLowerCase()) &&
+            entry.password === password,
+        );
+
+        if (!matches) throw err;
+
+        const localUser: User = {
+          id: matches.id,
+          name: matches.name,
+          email: matches.email,
+          avatarInitials: matches.avatarInitials,
+          streakDays: 0,
+          plan: matches.plan,
+          role: matches.role,
+        };
+
+        setUser(localUser);
+        setProfileState(matches.profile);
+        setOnboarded(matches.onboarded);
+        if (matches.theme === "light" || matches.theme === "dark") setTheme(matches.theme);
+        window.localStorage.setItem("aster-current-user", matches.email);
+        setAuthenticated(true);
+        setReady(true);
+        return localUser;
+      }
+
       const me = await fetchMe();
       applyMe(me);
       setAuthenticated(true);
@@ -286,8 +366,66 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [applyMe, loadAppData],
   );
 
+  const signUp = useCallback(
+    async (name: string, email: string, password: string) => {
+      const trimmedName = name.trim();
+      const trimmedEmail = email.trim();
+      const safePassword = password.trim();
+      if (!trimmedName || !trimmedEmail || !safePassword) {
+        throw new Error("Preencha todos os campos para criar a conta.");
+      }
+
+      const users = readLocalDemoUsers();
+      if (users.some((entry) => entry.email.toLowerCase() === trimmedEmail.toLowerCase())) {
+        throw new Error("Já existe uma conta com este e-mail.");
+      }
+
+      const avatarInitials = trimmedName
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase() ?? "")
+        .join("") || "AC";
+
+      const newUser: LocalDemoUser = {
+        id: crypto.randomUUID(),
+        name: trimmedName,
+        email: trimmedEmail,
+        password: safePassword,
+        avatarInitials,
+        role: "student",
+        plan: "Essencial",
+        profile: defaultProfile,
+        onboarded: false,
+        theme,
+      };
+
+      writeLocalDemoUsers([...users, newUser]);
+      window.localStorage.setItem("aster-current-user", trimmedEmail);
+
+      const nextUser: User = {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        avatarInitials: newUser.avatarInitials,
+        streakDays: 0,
+        plan: newUser.plan,
+        role: "student",
+      };
+
+      setUser(nextUser);
+      setProfileState(defaultProfile);
+      setOnboarded(false);
+      setAuthenticated(true);
+      setReady(true);
+
+      return nextUser;
+    },
+    [theme],
+  );
+
   const signOut = useCallback(() => {
     void logout();
+    window.localStorage.removeItem("aster-current-user");
     setAuthenticated(false);
     setReady(false);
     setUser(defaultUser);
@@ -331,6 +469,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ready,
       bootError,
       signIn,
+      signUp,
       signOut,
       user,
       profile,
@@ -436,6 +575,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ready,
       bootError,
       signIn,
+      signUp,
       signOut,
       user,
       profile,

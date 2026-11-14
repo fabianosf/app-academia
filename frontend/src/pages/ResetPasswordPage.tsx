@@ -4,11 +4,12 @@ import { ArrowLeft, Lock } from "lucide-react";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { Button, Input } from "@/components/ui/primitives";
 import { useApp } from "@/hooks/AppContext";
+import { homePathForUser } from "@/lib/roles";
 import { confirmPasswordReset } from "@/services/api";
 import { ApiError } from "@/services/http";
 
 export function ResetPasswordPage() {
-  const { authenticated, authChecking } = useApp();
+  const { authenticated, authChecking, user } = useApp();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const uid = params.get("uid") ?? "";
@@ -32,7 +33,7 @@ export function ResetPasswordPage() {
     );
   }
 
-  if (authenticated) return <Navigate to="/" replace />;
+  if (authenticated) return <Navigate to={homePathForUser(user)} replace />;
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();

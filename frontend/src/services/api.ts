@@ -32,6 +32,45 @@ export type LoadLogRow = { id?: number; exercise: string; last: string; note: st
 
 export type AuthPortal = "student" | "management";
 
+const DEMO_USERS_KEY = "aster-demo-users-v1";
+const RESET_TOKENS_KEY = "aster-password-reset-v1";
+
+type DemoUserLite = {
+  id: string;
+  email: string;
+  password: string;
+};
+
+function readDemoUsers(): DemoUserLite[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(DEMO_USERS_KEY);
+    return raw ? (JSON.parse(raw) as DemoUserLite[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeDemoUsers(users: DemoUserLite[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(DEMO_USERS_KEY, JSON.stringify(users));
+}
+
+function readResetTokens(): Record<string, { token: string; email: string; userId: string; createdAt: number }> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(RESET_TOKENS_KEY);
+    return raw ? (JSON.parse(raw) as Record<string, { token: string; email: string; userId: string; createdAt: number }>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeResetTokens(value: Record<string, { token: string; email: string; userId: string; createdAt: number }>) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(RESET_TOKENS_KEY, JSON.stringify(value));
+}
+
 export async function login(
   username: string,
   password: string,
@@ -65,14 +104,50 @@ export async function logout() {
 }
 
 export async function requestPasswordReset(email: string) {
-  return apiFetch<{ detail: string; devResetUrl?: string }>(
-    "/auth/password-reset/",
-    {
-      method: "POST",
-      body: JSON.stringify({ email }),
-    },
-    false,
-  );
+  const normalizedEmail = email.trim();
+
+  try {
+    return await apiFetch<{ detail: string; devResetUrl?: string }>(
+      "/auth/password-reset/",
+      {
+        method: "POST",
+        body: JSON.stringify({ email: normalizedEmail }),
+      },
+      false,
+    );
+  } catch {
+    const users = readDemoUsers();
+    const exists = users.some((user) => user.email.toLowerCase() === normalizedEmail.toLowerCase());
+
+    if (!exists) {
+      return {
+        detail: "Se existir uma conta com este e-mail, as instruções foram enviadas.",
+      };
+    }
+
+    const user = users.find((candidate) => candidate.email.toLowerCase() === normalizedEmail.toLowerCase());
+    if (!user) {
+      return {
+        detail: "Se existir uma conta com este e-mail, as instruções foram enviadas.",
+      };
+    }
+
+    const resetTokens = readResetTokens();
+    const token = crypto.randomUUID().replace(/-/g, "").slice(0, 20);
+    resetTokens[user.id] = {
+      token,
+      email: user.email,
+      userId: user.id,
+      createdAt: Date.now(),
+    };
+    writeResetTokens(resetTokens);
+
+    const devResetUrl = `${window.location.origin}/redefinir-senha?uid=${encodeURIComponent(user.id)}&token=${encodeURIComponent(token)}`;
+    return {
+      detail: "Se existir uma conta com este e-mail, as instruções foram enviadas.",
+      devResetUrl,
+    };
+  }
 }
 
 export async function confirmPasswordReset(payload: {
@@ -80,14 +155,39 @@ export async function confirmPasswordReset(payload: {
   token: string;
   password: string;
 }) {
-  return apiFetch<{ detail: string }>(
-    "/auth/password-reset/confirm/",
-    {
-      method: "POST",
-      body: JSON.stringify(payload),
-    },
-    false,
-  );
+  try {
+    return await apiFetch<{ detail: string }>(
+      "/auth/password-reset/confirm/",
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      },
+      false,
+    );
+  } catch {
+    const resetTokens = readResetTokens();
+    const saved = resetTokens[payload.uid];
+
+    if (!saved || saved.token !== payload.token) {
+      throw new Error("Link de redefinição inválido ou expirado.");
+    }
+
+    const users = readDemoUsers();
+    const index = users.findIndex((user) => user.id === payload.uid);
+    if (index === -1) {
+      throw new Error("Usuário não encontrado para redefinir a senha.");
+    }
+
+    users[index] = {
+      ...users[index],
+      password: payload.password,
+    };
+    writeDemoUsers(users);
+    delete resetTokens[payload.uid];
+    writeResetTokens(resetTokens);
+
+    return { detail: "Senha atualizada com sucesso." };
+  }
 }
 
 /** Tenta sessão via cookie HttpOnly; não faz login automático com demo. */

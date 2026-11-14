@@ -55,13 +55,13 @@ type Mode = "chat" | "exercise";
 export function NinaPage() {
   const { profile, ninaNote, history, workouts } = useApp();
   const last = workouts.find((w) => w.id === history[0]?.workoutId);
-  const [mode, setMode] = useState<Mode>("exercise");
+  const [mode, setMode] = useState<Mode>("chat");
   const [messages, setMessages] = useState<AiChatMessage[]>([
     {
       id: "m0",
       role: "assistant",
       content:
-        "Oi, eu sou a Nina. Posso montar um treino curto, adaptar para casa ou explicar um movimento com calma — com o cérebro ANS (Academia Nutrição Saúde).",
+        "Oi, eu sou a Aster. Posso montar um treino curto, adaptar para casa ou explicar um movimento com calma — com o cérebro ANS (Academia Nutrição Saúde).",
       createdAt: new Date().toISOString(),
     },
   ]);
@@ -307,7 +307,7 @@ export function NinaPage() {
         <div className="grid h-28 place-items-center rounded-2xl bg-gradient-to-br from-orange-100 to-stone-100 text-sm text-stone-600">
           {ninaNote}
         </div>
-        <h2 className="mt-4 font-display text-xl font-semibold">Nina</h2>
+        <h2 className="mt-4 font-display text-xl font-semibold">Aster</h2>
         <p className="text-sm text-emerald-700">
           Online
           {listening ? " · ouvindo" : speaking ? " · falando" : ""}
@@ -365,7 +365,7 @@ export function NinaPage() {
 
       <section className="flex min-h-[32rem] flex-col rounded-2xl border border-stone-200 bg-white p-4">
         <PageHeader
-          title="Nina"
+          title="Aster"
           subtitle={
             mode === "exercise"
               ? "Descreve o movimento em linguagem comum ou fala — podes corrigir a transcrição antes de enviar."
@@ -396,7 +396,7 @@ export function NinaPage() {
                   {m.content}
                 </div>
               ))}
-              {loading && <p className="text-sm text-stone-500">Nina está a escrever…</p>}
+              {loading && <p className="text-sm text-stone-500">Aster está a escrever…</p>}
               {error && <p className="text-sm text-rose-700">{error}</p>}
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -613,7 +613,7 @@ export function NinaPage() {
           }}
         >
           <Input
-            aria-label="Mensagem para Nina"
+            aria-label="Mensagem para Aster"
             value={text}
             onChange={(e) => {
               setText(e.target.value);

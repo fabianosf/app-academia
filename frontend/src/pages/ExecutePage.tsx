@@ -74,7 +74,7 @@ export function ExecutePage() {
         </div>
         <Textarea className="mt-3" rows={3} placeholder="Observação opcional" value={note} onChange={(e) => setNote(e.target.value)} />
         <Link
-          to="/"
+          to="/dashboard"
           className="mt-4 inline-block"
           onClick={async (e) => {
             if (saving) {
@@ -136,7 +136,7 @@ export function ExecutePage() {
         <Button variant="secondary" onClick={() => setIndex((i) => Math.min(list.length - 1, i + 1))}><SkipForward size={16} /> Avançar</Button>
         <Button onClick={finishSet}>Concluir exercício</Button>
         <Link to={`/treinos/${workout.id}`}><Button variant="ghost">Ver execução</Button></Link>
-        <Link to="/nina"><Button variant="ghost">Tirar dúvida com Nina</Button></Link>
+        <Link to="/nina"><Button variant="ghost">Tirar dúvida com a Aster</Button></Link>
         <Button variant="ghost" onClick={() => setMusic((m) => !m)}>{music ? "Música ligada" : "Música pausada"}</Button>
       </div>
       <p className="mt-4 text-sm text-stone-600">{exercise.tip}</p>

@@ -8,9 +8,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-[linear-gradient(135deg,#e2a17f_0%,#cd7755_42%,#aa5338_100%)] text-[#fffaf7] shadow-[0_18px_32px_rgba(200,108,74,0.28)] hover:-translate-y-0.5 hover:shadow-[0_24px_40px_rgba(200,108,74,0.38)] active:translate-y-0",
-        secondary: "border border-[#2f3634] bg-[#181d1b] text-[#f3ece7] backdrop-blur-sm hover:-translate-y-0.5 hover:bg-[#1e2624] hover:shadow-[0_12px_24px_rgba(0,0,0,0.18)]",
-        ghost: "text-[#f2eae4] hover:bg-white/6",
+        primary: "bg-[linear-gradient(135deg,#0b1d24_0%,#123f4e_35%,#19a4a5_100%)] text-[#f8fbfb] shadow-[0_20px_40px_rgba(15,35,42,0.22)] hover:-translate-y-0.5 hover:shadow-[0_28px_50px_rgba(15,35,42,0.28)] active:translate-y-0",
+        secondary: "border border-[#d9d2ca] bg-white/80 text-[#1a2a2a] backdrop-blur-sm hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_12px_24px_rgba(9,26,31,0.08)]",
+        ghost: "text-[#1b2a2a] hover:bg-slate-100/80",
         danger: "bg-rose-100 text-rose-800 hover:bg-rose-200",
       },
       size: {
@@ -36,7 +36,7 @@ export function Button({ className, variant, size, asChild = false, ...props }: 
 }
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={cn("luxury-card rounded-[1.5rem] border border-[#eae0d9] bg-[linear-gradient(180deg,rgba(255,255,255,0.78)_0%,rgba(243,237,233,0.9)_100%)] text-[#1a2220] shadow-[0_24px_52px_rgba(32,30,28,0.06)] backdrop-blur-sm", className)}>{children}</div>;
+  return <div className={cn("luxury-card rounded-[1.6rem] border border-[#e9e1db] bg-[linear-gradient(180deg,rgba(255,255,255,0.84)_0%,rgba(247,242,237,0.96)_100%)] text-[#1a2220] shadow-[0_28px_60px_rgba(16,26,27,0.08)] backdrop-blur-sm", className)}>{children}</div>;
 }
 
 export function Badge({

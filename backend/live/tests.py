@@ -20,7 +20,7 @@ class LiveStreamUrlTests(TestCase):
             role="admin",
         )
         self.instructor = Instructor.objects.create(
-            public_id="i1", name="Fabiano", specialty="Força"
+            public_id="i1", name="Alex", specialty="Força"
         )
 
     def test_list_exposes_stream_fields(self):

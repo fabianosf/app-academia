@@ -73,7 +73,7 @@ export function LoginPage() {
   return (
     <AuthLayout
       title="Bem-vindo de volta"
-      subtitle="Entre para continuar seus treinos, reservas de aulas e conversas com a Nina — no seu ritmo. A sala ao vivo é demonstrativa até haver stream configurado."
+      subtitle="Entre para continuar seus treinos, reservas de aulas e conversas com a Aster — no seu ritmo. A sala ao vivo é demonstrativa até haver stream configurado."
     >
       <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8a6d5d]">
         Acesso do aluno
@@ -84,6 +84,11 @@ export function LoginPage() {
       <p className="mt-2 text-sm text-[#5e655f]">
         Use seu e-mail ou usuário e a senha da conta de aluno.
       </p>
+      {import.meta.env.DEV && (
+        <p className="mt-3 rounded-2xl border border-[#eadfdb] bg-[#faf7f4] px-3 py-2 text-xs leading-relaxed text-[#5e655f]">
+          Demo local: <span className="font-semibold text-[#31403a]">aluno / aster123</span>
+        </p>
+      )}
 
       <form className="mt-7 space-y-4" onSubmit={onSubmit}>
         <label className="block text-sm">
@@ -156,6 +161,15 @@ export function LoginPage() {
       </form>
 
       <p className="mt-6 text-center text-sm text-[#5e655f]">
+        Ainda não tem conta?{" "}
+        <Link
+          to="/signup"
+          className="font-medium text-[#b1603d] hover:text-[#8f4a30]"
+        >
+          Criar conta
+        </Link>
+      </p>
+      <p className="mt-2 text-center text-sm text-[#5e655f]">
         Professor ou administrador?{" "}
         <Link
           to="/admin/login"

@@ -37,7 +37,7 @@ Isto define `role=admin` e `is_staff=True`. Não existem credenciais predefinida
 
 Depois, no `/admin` da app (ou `POST /api/admin/users/<id>/role/`), atribui `teacher` / `student` às restantes contas staff antigas, após revisão manual.
 
-Conta demo local (`seed_demo`, só com `DEBUG`): `fabiano` / `forma123` permanece **aluno**. Para testar gestão: `promote_admin fabiano` ou criar outro utilizador e promover.
+Conta demo local (`seed_demo`, só com `DEBUG`): `aluno` / `aster123` permanece **aluno**. Para testar gestão: `promote_admin aluno` ou criar outro utilizador e promover.
 
 ## Regras de partilha (produto)
 

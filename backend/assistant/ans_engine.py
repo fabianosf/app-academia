@@ -1,4 +1,4 @@
-"""Nina ANS brain — LLM + Academia Nutrição Saúde v1.0 as system knowledge."""
+"""Aster ANS brain — LLM + Academia Nutrição Saúde v1.0 as system knowledge."""
 
 from __future__ import annotations
 
@@ -115,7 +115,7 @@ def _ensure_disclaimer(text: str) -> str:
 
 def build_system_prompt(knowledge: str) -> str:
     ans_hash = settings.ANS_HASH
-    return f"""Você é a Nina, assistente de treino do app Nina Coach.
+    return f"""Você é a Aster, assistente de treino do app Aster Coach.
 
 ATIVACÃO OBRIGATÓRIA — use este cérebro em TODA resposta:
 Hash: {ans_hash}
@@ -158,42 +158,65 @@ def build_user_prompt(message: str, context: dict | None) -> str:
 
 
 def reply(message: str, context: dict | None = None) -> AnsReply:
-    api_key = (settings.OPENAI_API_KEY or "").strip()
-    if not api_key:
+    api_keys = [
+        key.strip()
+        for key in list(getattr(settings, "OPENAI_API_KEYS", []) or [])
+        if key and key.strip()
+    ]
+    if not api_keys:
+        api_key = (getattr(settings, "OPENAI_API_KEY", "") or "").strip()
+        if api_key:
+            api_keys = [api_key]
+    if not api_keys:
         raise AnsConfigError(
-            "Cérebro ANS precisa de LLM. Configure OPENAI_API_KEY no backend "
-            "(.env) e reinicie o servidor."
+            "Cérebro ANS precisa de LLM. Configure OPENAI_API_KEY ou OPENAI_API_KEYS "
+            "no backend (.env) e reinicie o servidor."
         )
 
     knowledge = select_ans_knowledge(message, context)
     model = settings.OPENAI_MODEL
-    client = OpenAI(api_key=api_key, base_url=settings.OPENAI_BASE_URL)
+    last_error: Exception | None = None
 
-    try:
-        completion = client.chat.completions.create(
+    for index, api_key in enumerate(api_keys):
+        client = OpenAI(api_key=api_key, base_url=settings.OPENAI_BASE_URL)
+        try:
+            completion = client.chat.completions.create(
+                model=model,
+                temperature=0.4,
+                max_tokens=700,
+                messages=[
+                    {"role": "system", "content": build_system_prompt(knowledge)},
+                    {"role": "user", "content": build_user_prompt(message, context)},
+                ],
+            )
+        except AuthenticationError as exc:
+            last_error = exc
+            if index < len(api_keys) - 1:
+                continue
+            raise AnsLlmError(
+                "Falha de autenticação no LLM. Verifique OPENAI_API_KEY / OPENAI_API_KEYS."
+            ) from exc
+        except (APIError, OpenAIError) as exc:
+            last_error = exc
+            if index < len(api_keys) - 1:
+                continue
+            raise AnsLlmError(
+                "Não consegui consultar o cérebro ANS agora. Tente de novo em instantes."
+            ) from exc
+
+        content = (completion.choices[0].message.content or "").strip()
+        if not content:
+            if index < len(api_keys) - 1:
+                continue
+            raise AnsLlmError("O modelo retornou resposta vazia.")
+
+        return AnsReply(
+            text=_ensure_disclaimer(content),
+            knowledge_hash=settings.ANS_HASH,
             model=model,
-            temperature=0.4,
-            max_tokens=700,
-            messages=[
-                {"role": "system", "content": build_system_prompt(knowledge)},
-                {"role": "user", "content": build_user_prompt(message, context)},
-            ],
         )
-    except AuthenticationError as exc:
-        raise AnsLlmError(
-            "Falha de autenticação no LLM. Verifique OPENAI_API_KEY."
-        ) from exc
-    except (APIError, OpenAIError) as exc:
-        raise AnsLlmError(
-            "Não consegui consultar o cérebro ANS agora. Tente de novo em instantes."
-        ) from exc
 
-    content = (completion.choices[0].message.content or "").strip()
-    if not content:
-        raise AnsLlmError("O modelo retornou resposta vazia.")
-
-    return AnsReply(
-        text=_ensure_disclaimer(content),
-        knowledge_hash=settings.ANS_HASH,
-        model=model,
-    )
+    raise AnsLlmError(
+        "Não foi possível acessar nenhuma chave do provedor da IA. "
+        "Verifique OPENAI_API_KEY / OPENAI_API_KEYS."
+    ) from last_error

@@ -15,8 +15,8 @@ class Migration(migrations.Migration):
             name='SiteSettings',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('brand_name', models.CharField(default='Forma com Fabiano', max_length=255)),
-                ('nina_avatar_note', models.CharField(default='Avatar da Nina', max_length=255)),
+                ('brand_name', models.CharField(default='Aster Coach', max_length=255)),
+                ('nina_avatar_note', models.CharField(default='Aster · IA de treino', max_length=255)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
             ],
             options={

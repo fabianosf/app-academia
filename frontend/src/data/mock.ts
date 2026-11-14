@@ -2,9 +2,9 @@ import type { Exercise, Workout, LiveClass, Instructor, WorkoutHistory, Achievem
 
 export const user: User = {
   id: "u1",
-  name: "Fabiano",
-  email: "fabiano@postay.com.br",
-  avatarInitials: "FF",
+  name: "Alex",
+  email: "alex@astercoach.app",
+  avatarInitials: "AL",
   streakDays: 4,
   plan: "Completo",
 };
@@ -89,7 +89,7 @@ export const achievements: Achievement[] = [
 export const notifications: Notification[] = [
   { id: "n1", title: "Treino de hoje", body: "Funcional em casa está pronto para começar.", time: "há 1 h", read: false },
   { id: "n2", title: "Aula às 19h", body: "Força em casa sem pressa ainda tem vagas.", time: "há 3 h", read: false },
-  { id: "n3", title: "Nina", body: "Ontem foi pernas. Hoje, mobilidade pode equilibrar a semana.", time: "ontem", read: true },
+  { id: "n3", title: "Aster", body: "Ontem foi pernas. Hoje, mobilidade pode equilibrar a semana.", time: "ontem", read: true },
 ];
 
 export const weeklyFrequency = [
