@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 export function AuthLayout({
   children,
-  eyebrow = "Forma com Fabiano",
+  eyebrow = "Nina Coach",
   title,
   subtitle,
 }: {
@@ -22,14 +22,14 @@ export function AuthLayout({
       <div className="relative mx-auto grid min-h-screen max-w-6xl lg:grid-cols-[1.05fr_0.95fr]">
         <section className="flex flex-col justify-between px-6 py-8 md:px-10 md:py-12">
           <Link to="/login" className="inline-flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[linear-gradient(135deg,#1d2a26_0%,#32463d_100%)] text-sm font-semibold text-white shadow-[0_14px_28px_rgba(29,42,38,0.28)]">
-              FF
+            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[linear-gradient(135deg,#061C2B_0%,#1DB7B8_100%)] text-sm font-semibold text-white shadow-[0_14px_28px_rgba(29,42,38,0.28)]">
+              NC
             </span>
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#7c665d]">
                 {eyebrow}
               </p>
-              <p className="font-display text-lg font-semibold text-[#1d2a26]">Forma com Fabiano</p>
+              <p className="font-display text-lg font-semibold text-[#1d2a26]">Nina Coach</p>
             </div>
           </Link>
 

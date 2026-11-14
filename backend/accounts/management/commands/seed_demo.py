@@ -1,4 +1,4 @@
-"""Seed database with Forma com Fabiano demo data (from frontend mock)."""
+"""Seed database with Nina Coach demo data (from frontend mock)."""
 
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
@@ -80,7 +80,7 @@ HISTORY = [
 
 
 class Command(BaseCommand):
-    help = "Popula o banco com dados demo do Forma com Fabiano"
+    help = "Popula o banco com dados demo do Nina Coach"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -164,8 +164,8 @@ class Command(BaseCommand):
         SiteSettings.objects.update_or_create(
             pk=1,
             defaults={
-                "brand_name": "Forma com Fabiano",
-                "nina_avatar_note": "Avatar da Nina",
+                "brand_name": "Nina Coach",
+                "nina_avatar_note": "Nina · IA de treino",
             },
         )
 

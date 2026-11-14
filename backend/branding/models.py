@@ -2,8 +2,8 @@ from django.db import models
 
 
 class SiteSettings(models.Model):
-    brand_name = models.CharField(max_length=255, default="Forma com Fabiano")
-    nina_avatar_note = models.CharField(max_length=255, default="Avatar da Nina")
+    brand_name = models.CharField(max_length=255, default="Nina Coach")
+    nina_avatar_note = models.CharField(max_length=255, default="Nina · IA de treino")
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

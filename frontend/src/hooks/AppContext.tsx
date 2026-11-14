@@ -143,8 +143,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [onboarded, setOnboarded] = useState(true);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [reservations, setReservations] = useState<ClassReservation[]>([]);
-  const [brand, setBrand] = useState("Forma com Fabiano");
-  const [ninaNote, setNinaNote] = useState("Avatar da Nina");
+  const [brand, setBrand] = useState("Nina Coach");
+  const [ninaNote, setNinaNote] = useState("Nina · IA de treino");
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [liveClasses, setLiveClasses] = useState<LiveClass[]>([]);

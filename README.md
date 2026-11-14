@@ -1,4 +1,4 @@
-# Forma com Fabiano
+# Nina Coach
 
 Aplicativo fitness (PT-BR) com frontend React e backend Django REST + JWT.
 

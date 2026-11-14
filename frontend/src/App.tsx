@@ -108,7 +108,7 @@ function ProtectedApp() {
   if (authChecking) {
     return (
       <div className="grid min-h-screen place-items-center text-sm text-[#5e655f]">
-        Conectando à Forma com Fabiano…
+        Conectando à Nina Coach…
       </div>
     );
   }

@@ -1,4 +1,4 @@
-# Backend — Forma com Fabiano
+# Backend — Nina Coach
 
 Django 6 + Django REST Framework + SimpleJWT (cookies HttpOnly).
 

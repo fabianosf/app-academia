@@ -240,7 +240,7 @@ class PasswordResetRequestView(APIView):
             token = default_token_generator.make_token(user)
             frontend = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
             reset_url = f"{frontend}/redefinir-senha?uid={uid}&token={token}"
-            subject = "Redefinir senha — Forma com Fabiano"
+            subject = "Redefinir senha — Nina Coach"
             body = (
                 f"Olá, {user.name or user.username}.\n\n"
                 f"Recebemos um pedido para redefinir sua senha.\n"

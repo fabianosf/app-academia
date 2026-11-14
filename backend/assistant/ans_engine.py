@@ -115,7 +115,7 @@ def _ensure_disclaimer(text: str) -> str:
 
 def build_system_prompt(knowledge: str) -> str:
     ans_hash = settings.ANS_HASH
-    return f"""Você é a Nina, assistente de treino do app Forma com Fabiano.
+    return f"""Você é a Nina, assistente de treino do app Nina Coach.
 
 ATIVACÃO OBRIGATÓRIA — use este cérebro em TODA resposta:
 Hash: {ans_hash}

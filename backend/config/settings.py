@@ -1,4 +1,4 @@
-"""Django settings for Forma com Fabiano API."""
+"""Django settings for Nina Coach API."""
 
 import os
 import secrets
