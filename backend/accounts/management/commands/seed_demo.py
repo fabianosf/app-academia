@@ -25,6 +25,9 @@ from training.models import (
 
 User = get_user_model()
 TZ = ZoneInfo("America/Sao_Paulo")
+DEMO_USERNAME = os.getenv("DEMO_USERNAME", "fabiano")
+DEMO_EMAIL = os.getenv("DEMO_EMAIL", "fabiano@postay.com.br")
+DEMO_PASSWORD = os.getenv("DEMO_PASSWORD", "forma123")
 
 EXERCISES = [
     {"public_id": "e1", "name": "Agachamento com peso corporal", "sets": 3, "reps": "12", "rest_seconds": 45, "tip": "Desça até as coxas ficarem quase paralelas ao chão e empurre o chão com o pé inteiro.", "focus": "Pernas", "place": "Ambos"},
@@ -110,9 +113,9 @@ class Command(BaseCommand):
         # Conta demo: aluno por omissão (sem promoção automática a admin).
         # Para gestão: python manage.py promote_admin fabiano
         user, created = User.objects.get_or_create(
-            username="fabiano",
+            username=DEMO_USERNAME,
             defaults={
-                "email": "fabiano@postay.com.br",
+                "email": DEMO_EMAIL,
                 "name": "Fabiano",
                 "avatar_initials": "FF",
                 "streak_days": 4,
@@ -125,11 +128,11 @@ class Command(BaseCommand):
             },
         )
         if created or not user.has_usable_password():
-            user.set_password("forma123")
+            user.set_password(DEMO_PASSWORD)
             user.is_superuser = False
             user.save()
         else:
-            user.email = "fabiano@postay.com.br"
+            user.email = DEMO_EMAIL
             user.name = "Fabiano"
             user.avatar_initials = "FF"
             user.streak_days = 4
@@ -139,8 +142,8 @@ class Command(BaseCommand):
             user.save()
         self.stdout.write(
             self.style.WARNING(
-                "Demo aluno: fabiano / forma123 (apenas DEBUG). "
-                "Admin: promote_admin fabiano — não use em produção."
+                f"Demo aluno: {DEMO_USERNAME} (credenciais via env em DEBUG). "
+                f"Admin: promote_admin {DEMO_USERNAME} — não use em produção."
             )
         )
 

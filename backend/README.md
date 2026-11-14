@@ -7,15 +7,16 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env   # ajuste OPENAI_* / DJANGO_* conforme necessário
+# opcional em DEBUG local: export DEMO_USERNAME=fabiano DEMO_PASSWORD='forma123'
 python manage.py migrate
-python manage.py seed_demo          # só com DEBUG=true; conta aluno fabiano/forma123
+python manage.py seed_demo          # só com DEBUG=true
 # python manage.py promote_admin fabiano   # opcional: role=admin + is_staff
 python manage.py runserver 8000
 ```
 
 `seed_demo` **não** cria admin nem promove `is_staff` automaticamente. Papéis: ver `docs/PAPEIS_E_ADMIN.md`.
 
-Demo aluno: `fabiano` / `forma123` (apenas DEBUG).
+Demo aluno: usa `DEMO_USERNAME`/`DEMO_PASSWORD` (padrão local: `fabiano` / `forma123` apenas em DEBUG).
 
 Apps: `accounts`, `catalog`, `training`, `live`, `assistant`, `movement`, `notifications`, `branding`.
 

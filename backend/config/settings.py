@@ -1,8 +1,9 @@
 """Django settings for Forma com Fabiano API."""
 
+import os
+import secrets
 from datetime import timedelta
 from pathlib import Path
-import os
 
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
@@ -15,7 +16,15 @@ INSECURE_DEV_SECRET = (
     "django-insecure-forma-dev-only-change-in-production-2025-rotate-me-please"
 )
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", INSECURE_DEV_SECRET)
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    if os.getenv("DJANGO_DEBUG", "true").lower() == "true":
+        SECRET_KEY = secrets.token_urlsafe(64)
+    else:
+        raise ImproperlyConfigured(
+            "DJANGO_SECRET_KEY deve ser configurada explicitamente em ambiente "
+            "não local."
+        )
 
 if len(SECRET_KEY) < 32:
     raise ImproperlyConfigured(
