@@ -9,6 +9,12 @@ const metrics = [
   { label: "sua rotina em 1 app", value: "24h" },
 ];
 
+const valuePoints = [
+  "Treino adaptado ao seu nível e tempo disponível.",
+  "Foco em consistência, nem em excesso de informação.",
+  "Orientação prática para evoluir sem virar rotina pesada.",
+];
+
 const benefits = [
   {
     icon: BrainCircuit,
@@ -158,6 +164,26 @@ export function LandingPage() {
           </motion.div>
         </section>
 
+        <section className="mt-24">
+          <div className="mx-auto max-w-2xl text-center">
+            <Badge tone="neutral" className="border border-slate-200 bg-white/70 text-slate-700">
+              Prova de valor
+            </Badge>
+            <h2 className="mt-5 font-display text-4xl text-slate-950">Seu treino guiado por inteligência.</h2>
+          </div>
+
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            {valuePoints.map((point) => (
+              <Card key={point} className="border border-slate-200 bg-white/80 p-5 text-left shadow-[0_20px_36px_rgba(15,23,42,0.04)]">
+                <div className="mb-3 grid h-10 w-10 place-items-center rounded-full bg-emerald-100 text-emerald-700">
+                  <Check size={16} />
+                </div>
+                <p className="text-base leading-relaxed text-slate-700">{point}</p>
+              </Card>
+            ))}
+          </div>
+        </section>
+
         <section id="beneficios" className="mt-24">
           <div className="mx-auto max-w-2xl text-center">
             <Badge tone="neutral" className="border border-slate-200 bg-white/70 text-slate-700">
@@ -252,6 +278,14 @@ export function LandingPage() {
             </div>
           </Card>
         </section>
+
+        <footer className="mt-10 border-t border-slate-200/80 pt-6 pb-2 text-center text-sm text-slate-500">
+          <div className="flex items-center justify-center gap-3">
+            <span className="grid h-8 w-8 place-items-center rounded-xl bg-[linear-gradient(135deg,#061C2B_0%,#1DB7B8_100%)] text-[10px] font-bold text-white">NC</span>
+            <span>Nina Coach</span>
+          </div>
+          <p className="mt-3">Seu treino guiado por inteligência.</p>
+        </footer>
       </main>
     </div>
   );
