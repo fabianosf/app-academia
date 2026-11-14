@@ -71,6 +71,11 @@ def assign_student_to_teacher(*, admin, teacher, student, note: str = ""):
         raise ValueError("O utilizador indicado não é professor.")
     if student.role != User.Role.STUDENT:
         raise ValueError("O utilizador indicado não é aluno.")
+    existing = TeacherStudentAssignment.objects.filter(
+        teacher=teacher, student=student, ended_at__isnull=True
+    ).first()
+    if existing:
+        raise ValueError("Este professor já está atribuído a este aluno.")
     now = timezone.now()
     # Encerrar atribuição ativa anterior do aluno (outro professor).
     previous = TeacherStudentAssignment.objects.filter(

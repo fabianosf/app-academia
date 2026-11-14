@@ -25,16 +25,36 @@ export function AdminAssignmentsPage() {
       active: boolean;
     }[]
   >([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const load = () => {
-    void fetchAdminAssignments().then((r) => setRows(r.results.filter((x) => x.active)));
-    void fetchAdminUsers("teacher").then((r) => setTeachers(r.results));
-    void fetchAdminUsers("student").then((r) => setStudents(r.results));
+    setLoading(true);
+    void Promise.all([
+      fetchAdminAssignments(),
+      fetchAdminUsers("teacher"),
+      fetchAdminUsers("student"),
+    ])
+      .then(([assignments, teacherRows, studentRows]) => {
+        setRows(assignments.results.filter((x) => x.active));
+        setTeachers(teacherRows.results);
+        setStudents(studentRows.results);
+        setError("");
+      })
+      .catch(() => setError("Não foi possível carregar a gestão de atribuições."))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
     load();
   }, []);
+
+  const hasActiveAssignment =
+    teacherId !== "" &&
+    studentId !== "" &&
+    rows.some(
+      (row) => row.teacher.id === Number(teacherId) && row.student.id === Number(studentId),
+    );
 
   return (
     <div className="space-y-4">
@@ -42,6 +62,8 @@ export function AdminAssignmentsPage() {
         title="Atribuições professor ↔ aluno"
         subtitle="Histórico preservado ao mudar de professor. O novo só vê dados desde a nova atribuição."
       />
+      {error && <p className="text-sm text-rose-700">{error}</p>}
+      {loading && <p className="text-sm text-stone-500">A carregar atribuições…</p>}
       <div className="flex flex-wrap gap-2 rounded-2xl border border-stone-200 bg-white p-4">
         <select
           className="rounded-xl border border-stone-200 px-3 py-2 text-sm"
@@ -68,19 +90,30 @@ export function AdminAssignmentsPage() {
           ))}
         </select>
         <Button
-          disabled={!teacherId || !studentId}
+          disabled={!teacherId || !studentId || hasActiveAssignment}
           onClick={() =>
             void createAdminAssignment(Number(teacherId), Number(studentId))
               .then(() => {
                 toast("Atribuição criada.");
+                setTeacherId("");
+                setStudentId("");
                 load();
               })
-              .catch(() => toast("Falha na atribuição."))
+              .catch((err) => {
+                const detail =
+                  err instanceof Error && err.message ? err.message : "Falha na atribuição.";
+                toast(detail);
+              })
           }
         >
           Atribuir
         </Button>
       </div>
+      {hasActiveAssignment && (
+        <p className="text-sm text-amber-800">
+          Este professor já tem uma atribuição ativa com este aluno.
+        </p>
+      )}
       <ul className="space-y-2">
         {rows.length === 0 && (
           <li className="rounded-2xl border border-dashed border-stone-300 bg-white p-4 text-sm text-stone-600">

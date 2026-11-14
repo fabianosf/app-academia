@@ -16,6 +16,10 @@ export function ProfilePage() {
   const [name, setName] = useState(user.name);
   const [sharing, setSharing] = useState<TeacherSharing | null>(null);
   const isStudent = !user.role || user.role === "student";
+
+  useEffect(() => {
+    setName(user.name);
+  }, [user.name]);
   const isAdmin = user.role === "admin" || user.isPlatformAdmin;
   const isTeacher = user.role === "teacher" || user.isTeacher;
 

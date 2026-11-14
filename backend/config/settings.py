@@ -11,9 +11,17 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-INSECURE_DEV_SECRET = "django-insecure-forma-dev-only-change-in-production"
+INSECURE_DEV_SECRET = (
+    "django-insecure-forma-dev-only-change-in-production-2025-rotate-me-please"
+)
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", INSECURE_DEV_SECRET)
+
+if len(SECRET_KEY) < 32:
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY deve ter pelo menos 32 caracteres para cumprir "
+        "requisitos mínimos de segurança do JWT e do Django."
+    )
 
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
 

@@ -92,6 +92,21 @@ class RolesAssignmentConsentTests(TestCase):
             TeacherStudentAssignment.objects.filter(student=self.student).count(), 2
         )
 
+    def test_duplicate_active_assignment_is_rejected(self):
+        assign_student_to_teacher(
+            admin=self.admin, teacher=self.teacher, student=self.student
+        )
+        with self.assertRaisesMessage(ValueError, "Este professor já está atribuído a este aluno."):
+            assign_student_to_teacher(
+                admin=self.admin, teacher=self.teacher, student=self.student
+            )
+        self.assertEqual(
+            TeacherStudentAssignment.objects.filter(
+                teacher=self.teacher, student=self.student, ended_at__isnull=True
+            ).count(),
+            1,
+        )
+
     def test_consent_scopes_teacher_detail(self):
         assign_student_to_teacher(
             admin=self.admin, teacher=self.teacher, student=self.student

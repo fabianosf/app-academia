@@ -14,19 +14,25 @@ export function AdminUsersPage() {
   const [role, setRole] = useState("");
   const [rows, setRows] = useState<AdminUserRow[]>([]);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const load = () => {
+    setLoading(true);
     fetchAdminUsers(role || undefined, q || undefined)
       .then((r) => {
         setRows(r.results);
         setError("");
       })
-      .catch(() => setError("Sem permissão ou falha ao listar utilizadores."));
+      .catch(() => setError("Sem permissão ou falha ao listar utilizadores."))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    load();
-  }, [role]);
+    const t = window.setTimeout(() => {
+      load();
+    }, 200);
+    return () => window.clearTimeout(t);
+  }, [role, q]);
 
   return (
     <div className="space-y-4">
@@ -52,11 +58,17 @@ export function AdminUsersPage() {
           <option value="teacher">Professores</option>
           <option value="admin">Admins</option>
         </select>
-        <Button variant="secondary" onClick={load}>
+        <Button variant="secondary" onClick={load} disabled={loading}>
           Filtrar
         </Button>
       </div>
+      {loading && <p className="text-sm text-stone-500">A carregar utilizadores…</p>}
       {error && <p className="text-sm text-rose-700">{error}</p>}
+      {!loading && rows.length === 0 && (
+        <p className="rounded-2xl border border-dashed border-stone-300 bg-white p-4 text-sm text-stone-600">
+          Nenhum utilizador encontrado para os filtros atuais.
+        </p>
+      )}
       <ul className="space-y-2">
         {rows.map((u) => (
           <li

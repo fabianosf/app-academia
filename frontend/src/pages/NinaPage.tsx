@@ -227,10 +227,12 @@ export function NinaPage() {
   const stopListening = () => {
     recognitionRef.current?.stop();
     setListening(false);
+    setPendingTranscript(false);
   };
 
   const startListening = async () => {
     unlockSpeechAudio();
+    setPendingTranscript(false);
     if (!secure) {
       setError(
         "Microfone bloqueado em HTTP. No celular use HTTPS e aceite o certificado.",
@@ -615,7 +617,7 @@ export function NinaPage() {
             value={text}
             onChange={(e) => {
               setText(e.target.value);
-              if (pendingTranscript) setPendingTranscript(true);
+              setPendingTranscript(false);
             }}
             placeholder={
               listening
