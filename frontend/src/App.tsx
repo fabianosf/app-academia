@@ -76,6 +76,9 @@ const TeacherContentPage = lazy(() =>
     default: m.TeacherContentPage,
   })),
 );
+const LandingPage = lazy(() =>
+  import("@/pages/LandingPage").then((m) => ({ default: m.LandingPage })),
+);
 const LoginPage = lazy(() =>
   import("@/pages/LoginPage").then((m) => ({ default: m.LoginPage })),
 );
@@ -169,6 +172,7 @@ export default function App() {
       <BrowserRouter>
         <Suspense fallback={<PageFallback />}>
           <Routes>
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/admin/login" element={<ManagementLoginPage />} />
             <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />

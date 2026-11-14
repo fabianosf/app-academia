@@ -39,14 +39,22 @@ export function Card({ className, children }: { className?: string; children: Re
   return <div className={cn("luxury-card rounded-[1.5rem] border border-[#eae0d9] bg-[linear-gradient(180deg,rgba(255,255,255,0.78)_0%,rgba(243,237,233,0.9)_100%)] text-[#1a2220] shadow-[0_24px_52px_rgba(32,30,28,0.06)] backdrop-blur-sm", className)}>{children}</div>;
 }
 
-export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "green" | "amber" | "live" }) {
+export function Badge({
+  children,
+  tone = "neutral",
+  className,
+}: {
+  children: ReactNode;
+  tone?: "neutral" | "green" | "amber" | "live";
+  className?: string;
+}) {
   const map = {
     neutral: "bg-[#f0eee9] text-[#403d39]",
     green: "bg-emerald-100 text-emerald-800",
     amber: "bg-amber-100 text-amber-900",
     live: "bg-gradient-to-r from-[#ef4444] to-[#dc2626] text-white shadow-sm",
   };
-  return <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-[0.12em] uppercase", map[tone])}>{children}</span>;
+  return <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-[0.12em] uppercase", map[tone], className)}>{children}</span>;
 }
 
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
